@@ -15,6 +15,8 @@ const socket = io(SOCKETS_URL, {
   withCredentials: NODE_ENV === "production",
 });
 
+import ImageRender from "./components/ImageRender";
+
 const App = () => {
   const [user, setUser] = useState(null);
 
@@ -66,6 +68,7 @@ const App = () => {
           <Route path="/signup" element={<Signup setUser={setUser} />} />
           <Route exact path="/" element={<Home />} />
           <Route path="*" element={<NotFound />} />
+          <Route path="/ocr" element={<ImageRender />} />
         </Routes>
       </div>
     </div>

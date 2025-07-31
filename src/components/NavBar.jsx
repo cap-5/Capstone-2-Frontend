@@ -25,6 +25,9 @@ const NavBar = ({ user, onLogout }) => {
             <Link to="/signup" className="nav-link">
               Sign Up
             </Link>
+            <Link to="/ocr" className="nav-link">
+              OCR Tool
+            </Link>
           </div>
         )}
       </div>
