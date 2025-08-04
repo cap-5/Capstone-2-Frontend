@@ -81,7 +81,7 @@ function OcrComponent() {
 
     try {
       setIsSaving(true);
-      const res = await axios.post('http://localhost:8080/api/receipts/save', receiptPayload);
+      const res = await axios.post('http://localhost:8080/api/receipts/', receiptPayload);
       alert('Receipt saved successfully!');
       console.log(res.data);
     } catch (err) {
