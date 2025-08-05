@@ -39,12 +39,12 @@ const DisplayUserInfo = (userInfo) => {
 
   return (
     <div className="user-container">
-      <h1>Welcome, {formData.firstName}!</h1>
+      <p>Welcome, {formData.firstName}</p>
 
       <table className="user-table">
         <thead>
           <tr>
-            <th>First Name</th>
+            <th>First Name{formData.firstName}</th>
             <th>Last Name</th>
             <th>email</th>
           </tr>
@@ -60,4 +60,5 @@ const DisplayUserInfo = (userInfo) => {
     </div>
   );
 };
+
 export default DisplayUserInfo;

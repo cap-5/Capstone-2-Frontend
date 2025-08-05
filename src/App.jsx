@@ -11,6 +11,7 @@ import NotFound from "./components/NotFound";
 import { API_URL, SOCKETS_URL, NODE_ENV } from "./shared";
 import { io } from "socket.io-client";
 import DisplayUserInfo from "./components/DisplayUserInfo";
+import ReceiptUploader from "./components/ReceiptUploader";
 
 const socket = io(SOCKETS_URL, {
   withCredentials: NODE_ENV === "production",
@@ -70,6 +71,7 @@ const App = () => {
           <Route exact path="/" element={<Home />} />
           <Route path="*" element={<NotFound />} />
           <Route path="/ocr" element={<ImageRender />} />
+          <Route path="/VerifyRender" element={<ReceiptUploader/>}/> 
           <Route path="U" element={<DisplayUserInfo />} />
         </Routes>
       </div>
