@@ -1,11 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { createWorker } from 'tesseract.js';
 import axios from 'axios';
+import { useParams } from 'react-router-dom';
 
 function OcrComponent() {
   const [ocrResult, setOcrResult] = useState('');
   const [imageFile, setImageFile] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
+
+  const { groupId } = useParams(); // From route: /groups/:groupId/upload
 
   useEffect(() => {
     const doOcr = async () => {
@@ -18,6 +21,7 @@ function OcrComponent() {
         await worker.terminate();
       }
     };
+
     doOcr();
   }, [imageFile]);
 
@@ -28,12 +32,10 @@ function OcrComponent() {
     }
   };
 
-  // Improved parser with fuzzy filter to skip subtotal/total lines with OCR noise
   const parseItemsFromText = (text) => {
     const lines = text.split('\n');
     const items = [];
 
-    // Words to skip, include common OCR typos for subtotal/total etc.
     const skipWords = ['total', 'subtotal', 'tax', 'swbtotel', 'swbtota', 'swbtote'];
 
     for (const line of lines) {
@@ -42,13 +44,9 @@ function OcrComponent() {
         let name = match[1].trim();
         const price = parseFloat(match[2]);
 
-        // Normalize name for fuzzy matching (lowercase + letters only)
         const normalized = name.toLowerCase().replace(/[^a-z]/g, '');
-
-        // Skip lines if normalized name contains any skipWords
         if (skipWords.some(word => normalized.includes(word))) continue;
 
-        // Remove leading quantity if present (e.g., "1 chicken" → "chicken")
         const quantityMatch = name.match(/^\d+\s+(.+)/);
         if (quantityMatch) {
           name = quantityMatch[1];
@@ -61,9 +59,15 @@ function OcrComponent() {
     return items;
   };
 
-  const parsedItems = parseItemsFromText(ocrResult);
+  // Memoized for performance
+  const parsedItems = useMemo(() => parseItemsFromText(ocrResult), [ocrResult]);
 
   const sendToBackend = async () => {
+    if (!groupId) {
+      alert('No group ID provided in the URL.');
+      return;
+    }
+
     if (!parsedItems.length) {
       alert('No valid items found in receipt.');
       return;
@@ -73,15 +77,19 @@ function OcrComponent() {
       receipt: {
         title: 'Scanned Receipt',
         body: ocrResult,
-        User_Id: 1, // Replace with actual user ID
-        Group_Id: null,
       },
       items: parsedItems,
     };
 
     try {
       setIsSaving(true);
-      const res = await axios.post('http://localhost:8080/api/receipts/', receiptPayload);
+
+      const res = await axios.post(
+        `http://localhost:8080/api/groups/${groupId}/Upload`,
+        receiptPayload,
+        { withCredentials: true }
+      );
+
       alert('Receipt saved successfully!');
       console.log(res.data);
     } catch (err) {
@@ -93,7 +101,7 @@ function OcrComponent() {
   };
 
   return (
-    <div style={{ padding: '1rem', maxWidth: '600px' }}>
+    <div style={{ padding: '1rem', maxWidth: '600px', margin: 'auto' }}>
       <h2>Receipt OCR Uploader</h2>
 
       <input type="file" accept="image/*" onChange={handleImageUpload} />
