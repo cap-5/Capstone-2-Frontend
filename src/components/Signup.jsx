@@ -115,7 +115,7 @@ const Signup = ({ setUser }) => {
         {errors.general && (
           <div className="error-message">{errors.general}</div>
         )}
-
+      
         <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label htmlFor="firstName">First Name:</label>
