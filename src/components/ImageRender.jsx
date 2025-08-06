@@ -7,8 +7,21 @@ function OcrComponent() {
   const [ocrResult, setOcrResult] = useState('');
   const [imageFile, setImageFile] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [category, setCategory] = useState('');
+  const [customCategory, setCustomCategory] = useState('');
+  const [isOther, setIsOther] = useState(false);
 
-  const { groupId } = useParams(); // From route: /groups/:groupId/upload
+  const predefinedCategories = [
+    'Entertainment',
+    'Groceries',
+    'Clothing',
+    'Transportation',
+    'Electronics',
+    'Restaurants / Dining',
+    'Other'
+  ];
+
+  const { groupId } = useParams();
 
   useEffect(() => {
     const doOcr = async () => {
@@ -59,17 +72,18 @@ function OcrComponent() {
     return items;
   };
 
-  // Memoized for performance
   const parsedItems = useMemo(() => parseItemsFromText(ocrResult), [ocrResult]);
 
   const sendToBackend = async () => {
-    // if (!groupId) {
-    //   alert('No group ID provided in the URL.');
-    //   return;
-    // }
-
     if (!parsedItems.length) {
       alert('No valid items found in receipt.');
+      return;
+    }
+
+    const finalCategory = isOther ? customCategory : category;
+
+    if (!finalCategory) {
+      alert('Please select or enter a category.');
       return;
     }
 
@@ -77,6 +91,7 @@ function OcrComponent() {
       receipt: {
         title: 'Scanned Receipt',
         body: ocrResult,
+        category: finalCategory,
       },
       items: parsedItems,
     };
@@ -86,7 +101,6 @@ function OcrComponent() {
 
       const res = await axios.post(
         `http://localhost:8080/api/receipts`,
-        // `http://localhost:8080/api/receipts/${groupId}/Upload`,
         receiptPayload,
         { withCredentials: true }
       );
@@ -99,6 +113,22 @@ function OcrComponent() {
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const handleCategoryChange = (e) => {
+    const selected = e.target.value;
+    if (selected === 'Other') {
+      setIsOther(true);
+      setCategory('');
+    } else {
+      setIsOther(false);
+      setCategory(selected);
+    }
+  };
+
+  const handleCustomCategoryChange = (e) => {
+    setCustomCategory(e.target.value);
+    setCategory(e.target.value);
   };
 
   return (
@@ -117,11 +147,37 @@ function OcrComponent() {
       {parsedItems.length > 0 ? (
         <ul>
           {parsedItems.map((item, i) => (
-            <li key={i}>{item.name} - ${item.price.toFixed(2)}</li>
+            <li key={i}>{item.name} - ${item.price.toFixed(2)}</li> //beef solution
           ))}
         </ul>
       ) : (
         <p>No items detected.</p>
+      )}
+
+      <div style={{ margin: '1rem 0' }}>
+        <label>
+          Category:
+          <select value={isOther ? 'Other' : category} onChange={handleCategoryChange}>
+            <option value="" disabled>Select a category</option>
+            {predefinedCategories.map((cat) => (
+              <option key={cat} value={cat}>{cat}</option>
+            ))}
+          </select>
+        </label>
+      </div>
+
+      {isOther && (
+        <div style={{ marginBottom: '1rem' }}>
+          <label>
+            Custom Category:
+            <input
+              type="text"
+              value={customCategory}
+              onChange={handleCustomCategoryChange}
+              placeholder="Enter your category"
+            />
+          </label>
+        </div>
       )}
 
       <button onClick={sendToBackend} disabled={isSaving || !parsedItems.length}>
