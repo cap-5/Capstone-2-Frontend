@@ -63,10 +63,10 @@ function OcrComponent() {
   const parsedItems = useMemo(() => parseItemsFromText(ocrResult), [ocrResult]);
 
   const sendToBackend = async () => {
-    if (!groupId) {
-      alert('No group ID provided in the URL.');
-      return;
-    }
+    // if (!groupId) {
+    //   alert('No group ID provided in the URL.');
+    //   return;
+    // }
 
     if (!parsedItems.length) {
       alert('No valid items found in receipt.');
@@ -85,7 +85,8 @@ function OcrComponent() {
       setIsSaving(true);
 
       const res = await axios.post(
-        `http://localhost:8080/api/groups/${groupId}/Upload`,
+        `http://localhost:8080/api/receipts`,
+        // `http://localhost:8080/api/receipts/${groupId}/Upload`,
         receiptPayload,
         { withCredentials: true }
       );
