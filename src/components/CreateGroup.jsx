@@ -28,5 +28,31 @@ const createGroup = (groupInfo) => {
       [name]: value,
     }));
   };
+  return (
+    <form onSubmit={handleSubmit}>
+      <label htmlFor="groupName">Group Name:</label>
+      <input
+        type="text"
+        id="groupName"
+        name="groupName"
+        value={groupData.groupName}
+        onChange={handleChange}
+      />
+      <br />
+      <br />
+      <label htmlFor="description">Description:</label>
+      <input
+        type="text"
+        id="description"
+        name="description"
+        value={groupData.description}
+        onChange={handleChange}
+      />
+      <br />
+      <br />
+      <input type="submit" value="Create Group" />
+    </form>
+  );
 };
+
 export default createGroup;
