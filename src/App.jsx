@@ -12,8 +12,6 @@ import { API_URL, SOCKETS_URL, NODE_ENV } from "./shared";
 import { io } from "socket.io-client";
 import UserSearch from "./components/UserSearch";
 
-import DisplayUserInfo from "./components/DisplayUserInfo";
-import ReceiptUploader from "./components/ReceiptUploader";
 
 const socket = io(SOCKETS_URL, {
   withCredentials: NODE_ENV === "production",
@@ -75,8 +73,6 @@ const App = () => {
           <Route path="/ocr" element={<ImageRender />} />
           <Route path="/UserSearch" element={<UserSearch />} />
 
-          <Route path="/VerifyRender" element={<ReceiptUploader/>}/> 
-          <Route path="U" element={<DisplayUserInfo />} />
         </Routes>
       </div>
     </div>
