@@ -47,7 +47,7 @@ export default function EditItems({ parsedItems, ocrResult }) {
   }
 
   const sendToBackend = async () => {
-    if (!parsedItems.length) {
+    if (!receiptItems.length) {
       alert("No valid items found in receipt.");
       return;
     }
@@ -109,7 +109,7 @@ export default function EditItems({ parsedItems, ocrResult }) {
       </ul>
       <button
         onClick={sendToBackend}
-        disabled={isSaving || !parsedItems.length}
+        disabled={isSaving || !receiptItems.length}
       >
         {isSaving ? "Saving..." : "Save to Database"}
       </button>
