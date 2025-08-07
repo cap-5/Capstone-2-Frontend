@@ -1,33 +1,52 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-
-const createGroup = (groupInfo) => {
-  const [createGroup, setCreateGroup] = useState({
+import "./CreateGroupstyle.css";
+const MakeGroup = () => {
+  const [groupData, setGroupData] = useState({
     description: "",
     groupName: "",
-    Receipt_Id: [],
   });
 
   const fetchGroupData = async () => {
     try {
-      const res = await axios.post("http://localhost:8080/api/group/create");
-      const grabInfo = res.data.grabInfo; // this the user info the info that i want and i pass
-      setCreateGroup({
+      const res = await axios.post(
+        "http://localhost:8080/api/group/create",
+        groupData,
+        {
+          withCredentials: true,
+        }
+      );
+      console.log(res.data.group); //grabbing the api
+      const grabInfo = res.data.group; //res is the data from the sever and the data is just to grab the sepecfic data i need
+      setGroupData({
         description: grabInfo.description,
-        groupName: grabInfo.groupName,
-        Receipt_Id: grabInfo.Receipt_Id,
+        groupName: grabInfo.groupName, //create a object in setGroupData and setting it value to
       });
+      console.log(grabInfo);
     } catch (err) {
-      console.error("cant not create new group", err);
+      console.error("Cannot create new group", err);
     }
   };
-  const handleChang = (e) => {
+  //useEffects fetches data
+  // useEffect(() => {
+  //makes sure to only run the code inside is render in this case it would be fetchGroupdata function
+  // }, []); //depency array what the compoent loads it renders and you would want to put a varible everytime it changes
+
+  const handleChange = (e) => {
     const { name, value } = e.target;
-    setCreateGroup((prev) => ({
+    setGroupData((prev) => ({
       ...prev,
       [name]: value,
     }));
   };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    fetchGroupData();
+    console.log("Form was submitted!", groupData);
+    // You can also POST groupData here if needed
+  };
+
   return (
     <form onSubmit={handleSubmit}>
       <label htmlFor="groupName">Group Name:</label>
@@ -40,6 +59,7 @@ const createGroup = (groupInfo) => {
       />
       <br />
       <br />
+
       <label htmlFor="description">Description:</label>
       <input
         type="text"
@@ -50,9 +70,10 @@ const createGroup = (groupInfo) => {
       />
       <br />
       <br />
-      <input type="submit" value="Create Group" />
+
+      <button type="submit">Create Group</button>
     </form>
   );
 };
 
-export default createGroup;
+export default MakeGroup;
