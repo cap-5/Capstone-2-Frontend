@@ -1,16 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { createWorker } from "tesseract.js";
-import axios from "axios";
-import { API_URL } from "../shared.js";
 import EditItems from "./EditItems.jsx";
-import { parse } from "dotenv";
-
-let nextKey = 0; 
 
 function OcrComponent() {
   const [ocrResult, setOcrResult] = useState("");
   const [imageFile, setImageFile] = useState(null);
-  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     const doOcr = async () => {
@@ -75,44 +69,7 @@ function OcrComponent() {
     return items;
   };
 
-  let parsedItems = parseItemsFromText(ocrResult);
-  // assign a key to each element in parsedItems
-  // parsedItems = parsedItems.map(item => ({
-  //   ...item,
-  //     key: nextKey++
-  // }));
-
-  const sendToBackend = async () => {
-    if (!parsedItems.length) {
-      alert("No valid items found in receipt.");
-      return;
-    }
-
-    const receiptPayload = {
-      receipt: {
-        title: "Scanned Receipt",
-        body: ocrResult,
-        User_Id: 1, // Replace with actual user ID
-        Group_Id: null,
-      },
-      items: parsedItems,
-    };
-
-    try {
-      setIsSaving(true);
-      const res = await axios.post(`${API_URL}/api/receipts`, receiptPayload);
-      alert("Receipt saved successfully!");
-      console.log(res.data);
-    } catch (err) {
-      console.error(
-        "Save error:",
-        err.response ? err.response.data : err.message,
-      );
-      alert("Error saving receipt.");
-    } finally {
-      setIsSaving(false);
-    }
-  };
+  const parsedItems = parseItemsFromText(ocrResult);
 
   return (
     <div style={{ padding: "1rem", maxWidth: "600px" }}>
@@ -148,14 +105,10 @@ function OcrComponent() {
         <p>No items detected.</p>
       )}
 
-      <EditItems parsedItems={parsedItems}/>
-
-      <button
-        onClick={sendToBackend}
-        disabled={isSaving || !parsedItems.length}
-      >
-        {isSaving ? "Saving..." : "Save to Database"}
-      </button>
+      <EditItems 
+      parsedItems={parsedItems}
+      ocrResult={ocrResult}/>
+      
     </div>
   );
 }
