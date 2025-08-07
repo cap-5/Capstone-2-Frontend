@@ -11,8 +11,8 @@ import NotFound from "./components/NotFound";
 import { API_URL, SOCKETS_URL, NODE_ENV } from "./shared";
 import { io } from "socket.io-client";
 import UserSearch from "./components/UserSearch";
-
-
+import DisplayUserInfo from "./components/DisplayUserInfo";
+import CreateGroup from "./components/CreateGroup";
 
 const socket = io(SOCKETS_URL, {
   withCredentials: NODE_ENV === "production",
@@ -73,7 +73,8 @@ const App = () => {
           <Route path="*" element={<NotFound />} />
           <Route path="/ocr" element={<ImageRender />} />
           <Route path="/UserSearch" element={<UserSearch />} />
-
+          <Route path="U" element={<DisplayUserInfo />} />
+          <Route path="L" element={<CreateGroup />} />
         </Routes>
       </div>
     </div>
