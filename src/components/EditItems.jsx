@@ -14,18 +14,35 @@ export default function EditItems({ parsedItems }) {
     setReceiptItems(parsedItems);
   }, [parsedItems]);
 
-  function handleOnChange(e) {
-    const { name, value } = e.target;
-    setReceiptItems((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+  function handleEditItemName(itemId, newName) {
+    setReceiptItems(
+      receiptItems.map((item) => {
+        if (item.id === itemId) {
+          return { ...item, name: newName };
+        } else {
+          return item;
+        }
+      }),
+    );
+  }
+
+  function handleEditItemPrice(itemId, newPrice) {
+    setReceiptItems(
+      receiptItems.map((item) => {
+        if (item.id === itemId) {
+          return { ...item, price: newPrice };
+        } else {
+          return item;
+        }
+      }),
+    );
   }
 
   return (
     <div>
       <h2>Edit Items:</h2>
       <ul>
+        {console.log("RECEIPT ITEMS: ", receiptItems)}
         {receiptItems.map((item) => (
           <li key={item.id}>
             <label for="name">Item Name: </label>
@@ -33,7 +50,9 @@ export default function EditItems({ parsedItems }) {
               type="text"
               name="name"
               value={item.name}
-              onChange={handleOnChange}
+              onChange={(e) => {
+                handleEditItemName(item.id, e.target.value);
+              }}
             />
             <label for="price">Price: </label>
             <input
@@ -41,7 +60,9 @@ export default function EditItems({ parsedItems }) {
               name="price"
               value={item.price}
               step="0.01"
-              onChange={handleOnChange}
+              onChange={(e) => {
+                handleEditItemPrice(item.id, e.target.value);
+              }}
             />
           </li>
         ))}

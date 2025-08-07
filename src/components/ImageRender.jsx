@@ -3,6 +3,9 @@ import { createWorker } from "tesseract.js";
 import axios from "axios";
 import { API_URL } from "../shared.js";
 import EditItems from "./EditItems.jsx";
+import { parse } from "dotenv";
+
+let nextKey = 0; 
 
 function OcrComponent() {
   const [ocrResult, setOcrResult] = useState("");
@@ -72,7 +75,12 @@ function OcrComponent() {
     return items;
   };
 
-  const parsedItems = parseItemsFromText(ocrResult);
+  let parsedItems = parseItemsFromText(ocrResult);
+  // assign a key to each element in parsedItems
+  // parsedItems = parsedItems.map(item => ({
+  //   ...item,
+  //     key: nextKey++
+  // }));
 
   const sendToBackend = async () => {
     if (!parsedItems.length) {
