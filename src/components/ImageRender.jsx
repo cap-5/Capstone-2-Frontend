@@ -58,6 +58,14 @@ function OcrComponent() {
       "swbtotel",
       "swbtota",
       "swbtote",
+      "cash",
+      "tender",
+      "change",
+      "paid",
+      "payment",
+      "balance",
+      "debit",
+      "credit",
     ];
 
     for (const line of lines) {
