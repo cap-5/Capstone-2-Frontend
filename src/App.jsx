@@ -10,10 +10,13 @@ import Home from "./components/Home";
 import NotFound from "./components/NotFound";
 import { API_URL, SOCKETS_URL, NODE_ENV } from "./shared";
 import { io } from "socket.io-client";
+// import ReceiptUploader from "./components/ReceiptUploader";
 
 const socket = io(SOCKETS_URL, {
   withCredentials: NODE_ENV === "production",
 });
+
+import ImageRender from "./components/ImageRender";
 
 const App = () => {
   const [user, setUser] = useState(null);
@@ -49,7 +52,7 @@ const App = () => {
         {},
         {
           withCredentials: true,
-        }
+        },
       );
       setUser(null);
     } catch (error) {
@@ -66,6 +69,8 @@ const App = () => {
           <Route path="/signup" element={<Signup setUser={setUser} />} />
           <Route exact path="/" element={<Home />} />
           <Route path="*" element={<NotFound />} />
+          <Route path="/ocr" element={<ImageRender />} />
+          {/* <Route path="/VerifyRender" element={<ReceiptUploader/>}/>  */}
         </Routes>
       </div>
     </div>
