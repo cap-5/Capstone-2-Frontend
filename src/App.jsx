@@ -73,8 +73,8 @@ const App = () => {
           <Route path="*" element={<NotFound />} />
           <Route path="/ocr" element={<ImageRender />} />
           <Route path="/UserSearch" element={<UserSearch />} />
-          <Route path="U" element={<DisplayUserInfo />} />
-          <Route path="L" element={<CreateGroup />} />
+          <Route path="Profile" element={<DisplayUserInfo />} />
+          <Route path="CreateGroup" element={<CreateGroup />} />
         </Routes>
       </div>
     </div>
