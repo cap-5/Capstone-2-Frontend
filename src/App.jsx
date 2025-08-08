@@ -13,12 +13,11 @@ import { io } from "socket.io-client";
 import UserSearch from "./components/UserSearch";
 import DisplayUserInfo from "./components/DisplayUserInfo";
 import CreateGroup from "./components/CreateGroup";
+import ImageRender from "./components/ImageRender";
 
 const socket = io(SOCKETS_URL, {
   withCredentials: NODE_ENV === "production",
 });
-
-import ImageRender from "./components/ImageRender";
 
 const App = () => {
   const [user, setUser] = useState(null);
@@ -71,7 +70,7 @@ const App = () => {
           <Route path="/signup" element={<Signup setUser={setUser} />} />
           <Route exact path="/" element={<Home />} />
           <Route path="*" element={<NotFound />} />
-          <Route path="/ocr" element={<ImageRender />} />
+          <Route path="/upload/:groupId" element={<ImageRender />} />
           <Route path="/UserSearch" element={<UserSearch />} />
           <Route path="Profile" element={<DisplayUserInfo />} />
           <Route path="CreateGroup" element={<CreateGroup />} />

@@ -2,14 +2,20 @@ import React, { useState, useEffect, useMemo } from "react";
 import { createWorker } from "tesseract.js";
 import axios from "axios";
 import { useParams } from "react-router-dom";
+import EditItems from "./EditItems";
+import { API_URL } from "../shared";
 
 function OcrComponent() {
   const [ocrResult, setOcrResult] = useState("");
   const [imageFile, setImageFile] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [receiptItems, setReceiptItems] = useState([]);
   const [category, setCategory] = useState("");
   const [customCategory, setCustomCategory] = useState("");
   const [isOther, setIsOther] = useState(false);
+
+  // const { groupId } = useParams();
+  const groupId = 1;
 
   const predefinedCategories = [
     "Entertainment",
@@ -21,14 +27,10 @@ function OcrComponent() {
     "Other",
   ];
 
-  const { groupId } = useParams();
-
   useEffect(() => {
     const doOcr = async () => {
       if (imageFile) {
-        const worker = await createWorker("eng", 1, {
-          logger: (m) => console.log(m),
-        });
+        const worker = await createWorker("eng", 1);
         const {
           data: { text },
         } = await worker.recognize(imageFile);
@@ -36,21 +38,12 @@ function OcrComponent() {
         await worker.terminate();
       }
     };
-
     doOcr();
   }, [imageFile]);
-
-  const handleImageUpload = (e) => {
-    if (e.target.files[0]) {
-      setImageFile(e.target.files[0]);
-      setOcrResult("Recognizing...");
-    }
-  };
 
   const parseItemsFromText = (text) => {
     const lines = text.split("\n");
     const items = [];
-
     const skipWords = [
       "total",
       "subtotal",
@@ -74,72 +67,44 @@ function OcrComponent() {
         let name = match[1].trim();
         const price = parseFloat(match[2]);
 
-        const normalized = name.toLowerCase().replace(/[^a-z]/g, "");
-        if (skipWords.some((word) => normalized.includes(word))) continue;
+        if (
+          skipWords.some((word) => new RegExp(`\\b${word}\\b`, "i").test(name))
+        )
+          continue;
+
+        if (skipWords.includes(name.toLowerCase())) continue;
 
         const quantityMatch = name.match(/^\d+\s+(.+)/);
-        if (quantityMatch) {
-          name = quantityMatch[1];
-        }
+        if (quantityMatch) name = quantityMatch[1];
 
-        // classify item type
-        let type = "product";
-        if (/cash|payment|visa|mastercard|credit|debit/i.test(name)) {
-          type = "payment";
-        } else if (/change|balance/i.test(name)) {
-          type = "change";
-        }
-
-        items.push({ name, price, type });
+        items.push({ name, price });
       }
     }
-
     return items;
   };
 
   const parsedItems = useMemo(() => parseItemsFromText(ocrResult), [ocrResult]);
 
-  const sendToBackend = async () => {
-    if (!parsedItems.length) {
-      alert("No valid items found in receipt.");
-      return;
-    }
+  // update editable state when parsedItems change
+  useEffect(() => {
+    // Find max existing key in receiptItems
+    const maxKey = receiptItems.length
+      ? Math.max(...receiptItems.map((item) => item.key))
+      : -1;
 
-    const finalCategory = isOther ? customCategory : category;
+    // Assign keys to parsedItems starting after maxKey
+    const enriched = parsedItems.map((item, idx) => ({
+      ...item,
+      key: maxKey + 1 + idx,
+    }));
 
-    if (!finalCategory) {
-      alert("Please select or enter a category.");
-      return;
-    }
+    setReceiptItems(enriched);
+  }, [parsedItems]);
 
-    const receiptPayload = {
-      receipt: {
-        title: "Scanned Receipt",
-        body: ocrResult,
-        category: finalCategory,
-      },
-      items: parsedItems,
-    };
-
-    try {
-      setIsSaving(true);
-
-      const res = await axios.post(
-        `http://localhost:8080/api/receipts`,
-        receiptPayload,
-        { withCredentials: true }
-      );
-
-      alert("Receipt saved successfully!");
-      console.log(res.data);
-    } catch (err) {
-      console.error(
-        "Save error:",
-        err.response ? err.response.data : err.message
-      );
-      alert("Error saving receipt.");
-    } finally {
-      setIsSaving(false);
+  const handleImageUpload = (e) => {
+    if (e.target.files[0]) {
+      setImageFile(e.target.files[0]);
+      setOcrResult("Recognizing...");
     }
   };
 
@@ -157,6 +122,47 @@ function OcrComponent() {
   const handleCustomCategoryChange = (e) => {
     setCustomCategory(e.target.value);
     setCategory(e.target.value);
+  };
+
+  const sendToBackend = async () => {
+    if (!receiptItems.length) {
+      alert("No items to save.");
+      return;
+    }
+
+    const finalCategory = isOther ? customCategory : category;
+    if (!finalCategory) {
+      alert("Please select or enter a category.");
+      return;
+    }
+
+    const payload = {
+      receipt: {
+        title: "Scanned Receipt",
+        body: ocrResult,
+        category: finalCategory,
+        Group_Id: groupId || null,
+      },
+      items: receiptItems,
+    };
+
+    try {
+      setIsSaving(true);
+      const res = await axios.post(
+        `${API_URL}/api/receipts/${groupId}/Upload`,
+        payload,
+        {
+          withCredentials: true,
+        }
+      );
+      alert("Receipt saved!");
+      console.log(res.data);
+    } catch (err) {
+      console.error(err);
+      alert("Error saving receipt.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -180,20 +186,7 @@ function OcrComponent() {
         {ocrResult}
       </pre>
 
-      <h4>Parsed Items:</h4>
-      {parsedItems.length > 0 ? (
-        <ul>
-          {parsedItems.map((item, i) => (
-            <li key={i}>
-              {item.name} - ${item.price.toFixed(2)}
-            </li> //beef solution
-          ))}
-        </ul>
-      ) : (
-        <p>No items detected.</p>
-      )}
-
-      <div style={{ margin: "1rem 0" }}>
+      <div style={{ marginTop: "1rem" }}>
         <label>
           Category:
           <select
@@ -210,25 +203,24 @@ function OcrComponent() {
             ))}
           </select>
         </label>
-      </div>
-
-      {isOther && (
-        <div style={{ marginBottom: "1rem" }}>
-          <label>
-            Custom Category:
+        {isOther && (
+          <div>
             <input
               type="text"
               value={customCategory}
               onChange={handleCustomCategoryChange}
-              placeholder="Enter your category"
+              placeholder="Enter custom category"
             />
-          </label>
-        </div>
-      )}
+          </div>
+        )}
+      </div>
+
+      <EditItems items={receiptItems} setItems={setReceiptItems} />
 
       <button
         onClick={sendToBackend}
-        disabled={isSaving || !parsedItems.length}
+        disabled={isSaving || !receiptItems.length}
+        style={{ marginTop: "1rem" }}
       >
         {isSaving ? "Saving..." : "Save to Database"}
       </button>

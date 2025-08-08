@@ -1,27 +1,27 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import "./NavBarStyles.css"
+import "./NavBarStyles.css";
 
-const NavBar = ({ user, onLogout }) => {
+const NavBar = ({ user, onLogout, groupId }) => {
   return (
     <nav className="navbar">
       <div className="nav-brand">
         <Link to="/">Capstone II</Link>
       </div>
-      
+
       <div className="nav-links">
-        <Link to="/ocr" className="nav-link">
-              OCR Tool
-            </Link>
-      <Link to="/UserSearch" className="nav-link">
-              User Search
-            </Link>
-            <Link to="/Profile" className="nav-link">
-                 Profile
-            </Link>
-            <Link to="/CreateGroup"  className="nav-link">
-                Create Group
-            </Link>
+        <Link to={`/upload/1`}>
+        OCR Tool
+        </Link>
+        <Link to="/UserSearch" className="nav-link">
+          User Search
+        </Link>
+        <Link to="/Profile" className="nav-link">
+          Profile
+        </Link>
+        <Link to="/CreateGroup" className="nav-link">
+          Create Group
+        </Link>
         {user ? (
           <div className="user-section">
             <span className="username">Welcome, {user.username}!</span>

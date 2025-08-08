@@ -1,108 +1,94 @@
-import React, { useState, useEffect, useMemo } from "react";
-import { createWorker } from "tesseract.js";
-import EditItems from "./EditItems.jsx";
+import React, { useEffect, useRef } from "react";
 
-function OcrComponent() {
-  const [ocrResult, setOcrResult] = useState("");
-  const [imageFile, setImageFile] = useState(null);
+function EditItems({ items, setItems }) {
+  // const initialData = [
+  //   { id: 1, name: "Ttemt", price: 10.0 },
+  //   { id: 2, name: "Item 2", price: 20.0 },
+  //   { id: 3, name: "Item 3", price: 30.0 },
+  // ];
+
+  const nextKey = useRef(0);
 
   useEffect(() => {
-    const doOcr = async () => {
-      if (imageFile) {
-        const worker = await createWorker("eng", 1, {
-          logger: (m) => console.log(m),
-        });
-        const {
-          data: { text },
-        } = await worker.recognize(imageFile);
-        setOcrResult(text);
-        await worker.terminate();
-      }
-    };
-
-    doOcr();
-  }, [imageFile]);
-
-  const handleImageUpload = (e) => {
-    if (e.target.files[0]) {
-      setImageFile(e.target.files[0]);
-      setOcrResult("Recognizing...");
+    if (items.length) {
+      const maxKey = Math.max(...items.map((item) => item.key));
+      nextKey.current = maxKey + 1;
+    } else {
+      nextKey.current = 0;
     }
-  };
+  }, [items]);
 
-  const parseItemsFromText = (text) => {
-    const lines = text.split("\n");
-    const items = [];
-
-    const skipWords = [
-      "total",
-      "subtotal",
-      "tax",
-      "swbtotel",
-      "swbtota",
-      "swbtote",
-    ];
-
-    for (const line of lines) {
-      const match = line.match(/(.+?)\s+(\d+\.\d{2})$/);
-      if (match) {
-        let name = match[1].trim();
-        const price = parseFloat(match[2]);
-
-        const normalized = name.toLowerCase().replace(/[^a-z]/g, "");
-        if (skipWords.some((word) => normalized.includes(word))) continue;
-
-        const quantityMatch = name.match(/^\d+\s+(.+)/);
-        if (quantityMatch) {
-          name = quantityMatch[1];
+  const handleEditItemName = (itemKey, newName) => {
+    setItems((prev) =>
+      prev.map((item) => {
+        if (item.key === itemKey) {
+          return { ...item, name: newName };
+        } else {
+          return item;
         }
-
-        items.push({ name, price });
-      }
-    }
-
-    return items;
+      })
+    );
   };
 
-  const parsedItems = useMemo(() => parseItemsFromText(ocrResult), [ocrResult]);
+  const handleEditItemPrice = (itemKey, newPrice) => {
+    const priceFloat = parseFloat(newPrice);
+    setItems((prev) =>
+      prev.map((item) => {
+        if (item.key === itemKey) {
+          return { ...item, price: isNaN(priceFloat) ? 0 : priceFloat };
+        } else {
+          return item;
+        }
+      })
+    );
+  };
+
+  const handleDeleteItem = (itemKey) => {
+    setItems((prev) => prev.filter((item) => item.key !== itemKey));
+  };
+
+  const handleAddItem = () => {
+    setItems((prev) => [
+      ...prev,
+      { key: nextKey.current++, name: "", price: 0 },
+    ]);
+  };
 
   return (
-    <div style={{ padding: "1rem", maxWidth: "600px" }}>
-      <h2>Receipt OCR Uploader</h2>
+    <div>
+      <h2>Edit Items:</h2>
+      <ul>
+        {items.map((item) => (
+          <li key={item.key}>
+            <label htmlFor={`name-${item.key}`}>Item Name: </label>
+            <input
+              type="text"
+              id={`name-${item.key}`}
+              value={item.name}
+              onChange={(e) => handleEditItemName(item.key, e.target.value)}
+            />
 
-      <input type="file" accept="image/*" onChange={handleImageUpload} />
-      <br />
-      <br />
+            <label htmlFor={`price-${item.key}`}> Price: </label>
+            <input
+              type="number"
+              id={`price-${item.key}`}
+              value={item.price}
+              step="0.01"
+              onChange={(e) => handleEditItemPrice(item.key, e.target.value)}
+            />
 
-      <p>
-        <strong>OCR Result:</strong>
-      </p>
-      <pre
-        style={{
-          background: "#f4f4f4",
-          padding: "1rem",
-          whiteSpace: "pre-wrap",
-        }}
-      >
-        {ocrResult}
-      </pre>
+            <button type="button" onClick={() => handleDeleteItem(item.key)}>
+              Delete
+            </button>
+          </li>
+        ))}
+      </ul>
 
-      <h4>Parsed Items:</h4>
-      {parsedItems.length > 0 ? (
-        <ul>
-          {parsedItems.map((item, i) => (
-            <li key={i}>
-              {item.name} - ${item.price.toFixed(2)}
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p>No items detected.</p>
-      )}
-
-      <EditItems parsedItems={parsedItems} ocrResult={ocrResult} />
+      <button type="button" onClick={handleAddItem}>
+        Add Item
+      </button>
     </div>
   );
 }
 
-export default OcrComponent;
+export default EditItems;
