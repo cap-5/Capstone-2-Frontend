@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { API_URL } from "../shared.js"; 
+import { API_URL } from "../shared.js";
 
 // const initialData = [
 //   { id: 1, name: "Ttemt", price: 10.0 },
@@ -15,10 +15,10 @@ export default function EditItems({ parsedItems, ocrResult }) {
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    const newItems = parsedItems.map(item => ({
-    ...item,
-      key: nextKey++
-  }));
+    const newItems = parsedItems.map((item) => ({
+      ...item,
+      key: nextKey++,
+    }));
     setReceiptItems(newItems);
   }, [parsedItems]);
 
@@ -30,7 +30,7 @@ export default function EditItems({ parsedItems, ocrResult }) {
         } else {
           return item;
         }
-      }),
+      })
     );
   }
 
@@ -42,8 +42,16 @@ export default function EditItems({ parsedItems, ocrResult }) {
         } else {
           return item;
         }
-      }),
+      })
     );
+  }
+
+  function handleDeleteItem(itemKey) {
+    setReceiptItems(receiptItems.filter((item) => item.key !== itemKey));
+  }
+
+  function handleAddItem() {
+    setReceiptItems([...receiptItems, { key: nextKey++, name: "", price: 0 }]);
   }
 
   const sendToBackend = async () => {
@@ -70,7 +78,7 @@ export default function EditItems({ parsedItems, ocrResult }) {
     } catch (err) {
       console.error(
         "Save error:",
-        err.response ? err.response.data : err.message,
+        err.response ? err.response.data : err.message
       );
       alert("Error saving receipt.");
     } finally {
@@ -94,6 +102,7 @@ export default function EditItems({ parsedItems, ocrResult }) {
                 handleEditItemName(item.key, e.target.value);
               }}
             />
+
             <label htmlFor="price">Price: </label>
             <input
               type="number"
@@ -104,9 +113,18 @@ export default function EditItems({ parsedItems, ocrResult }) {
                 handleEditItemPrice(item.key, e.target.value);
               }}
             />
+
+            <button type="button" onClick={() => handleDeleteItem(item.key)}>
+              Delete
+            </button>
           </li>
         ))}
       </ul>
+
+      <button type="button" onClick={handleAddItem}>
+        Add Item
+      </button>
+
       <button
         onClick={sendToBackend}
         disabled={isSaving || !parsedItems.length}

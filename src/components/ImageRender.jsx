@@ -10,7 +10,7 @@ function OcrComponent() {
     const doOcr = async () => {
       if (imageFile) {
         const worker = await createWorker("eng", 1, {
-          logger: (m) => console.log(m),
+          // logger: (m) => console.log(m),
         });
         const {
           data: { text },
@@ -92,7 +92,7 @@ function OcrComponent() {
         {ocrResult}
       </pre>
 
-      <h4>Parsed Items:</h4>
+      {/* <h4>Parsed Items:</h4>
       {parsedItems.length > 0 ? (
         <ul>
           {parsedItems.map((item, i) => (
@@ -103,12 +103,9 @@ function OcrComponent() {
         </ul>
       ) : (
         <p>No items detected.</p>
-      )}
+      )} */}
 
-      <EditItems 
-      parsedItems={parsedItems}
-      ocrResult={ocrResult}/>
-      
+      <EditItems parsedItems={parsedItems} ocrResult={ocrResult} />
     </div>
   );
 }
