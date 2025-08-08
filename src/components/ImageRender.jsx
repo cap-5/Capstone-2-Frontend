@@ -68,7 +68,6 @@ function OcrComponent() {
         items.push({ name, price });
       }
     }
-
     return items;
   };
 
