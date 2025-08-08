@@ -10,20 +10,18 @@ const NavBar = ({ user, onLogout, groupId }) => {
       </div>
 
       <div className="nav-links">
-        <Link to={`/upload/1`}>
-        OCR Tool
-        </Link>
-        <Link to="/UserSearch" className="nav-link">
-          User Search
-        </Link>
-        <Link to="/Profile" className="nav-link">
-          Profile
-        </Link>
-        <Link to="/CreateGroup" className="nav-link">
-          Create Group
-        </Link>
         {user ? (
           <div className="user-section">
+            <Link to="/upload/1">OCR Tool</Link>
+            <Link to="/user-search" className="nav-link">
+              User Search
+            </Link>
+            <Link to="/create-group" className="nav-link">
+              Create Group
+            </Link>
+            <Link to="/dashboard" className="nav-link">
+              Dashboard
+            </Link>
             <span className="username">Welcome, {user.username}!</span>
             <button onClick={onLogout} className="logout-btn">
               Logout

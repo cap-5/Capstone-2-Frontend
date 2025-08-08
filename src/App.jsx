@@ -14,6 +14,7 @@ import UserSearch from "./components/UserSearch";
 import DisplayUserInfo from "./components/DisplayUserInfo";
 import CreateGroup from "./components/CreateGroup";
 import ImageRender from "./components/ImageRender";
+import Dashboard from "./components/Dashboard";
 
 const socket = io(SOCKETS_URL, {
   withCredentials: NODE_ENV === "production",
@@ -61,23 +62,28 @@ const App = () => {
     }
   };
 
-  return (
-    <div>
-      <NavBar user={user} onLogout={handleLogout} />
-      <div className="app">
-        <Routes>
-          <Route path="/login" element={<Login setUser={setUser} />} />
-          <Route path="/signup" element={<Signup setUser={setUser} />} />
-          <Route exact path="/" element={<Home />} />
-          <Route path="*" element={<NotFound />} />
-          <Route path="/upload/:groupId" element={<ImageRender />} />
-          <Route path="/UserSearch" element={<UserSearch />} />
-          <Route path="Profile" element={<DisplayUserInfo />} />
-          <Route path="CreateGroup" element={<CreateGroup />} />
-        </Routes>
-      </div>
+return (
+  <div>
+    <NavBar user={user} onLogout={handleLogout} />
+    <div className="app">
+      <Routes>
+        <Route path="/login" element={<Login setUser={setUser} />} />
+        <Route path="/signup" element={<Signup setUser={setUser} />} />
+        <Route path="/" element={<Home />} />
+        <Route path="*" element={<NotFound />} />
+        <Route path="/upload/:groupId" element={<ImageRender />} />
+        <Route path="/user-search" element={<UserSearch />} />
+        <Route path="/create-group" element={<CreateGroup />} />
+
+         {/* nested navbar layout */}
+        <Route path="/dashboard" element={<Dashboard />}>
+          <Route path="profile" element={<DisplayUserInfo />} />
+        </Route>
+
+      </Routes>
     </div>
-  );
+  </div>
+);
 };
 
 const Root = () => {
