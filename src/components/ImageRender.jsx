@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { createWorker } from "tesseract.js";
 import axios from "axios";
-import { useParams } from "react-router-dom";
 import EditItems from "./EditItems";
 import { API_URL } from "../shared";
 
@@ -13,9 +12,9 @@ function OcrComponent() {
   const [category, setCategory] = useState("");
   const [customCategory, setCustomCategory] = useState("");
   const [isOther, setIsOther] = useState(false);
+  const [backendTotal, setBackendTotal] = useState(null);
 
-  // const { groupId } = useParams();
-  const groupId = 1;
+  const groupId = 1; // Hardcoded for now
 
   const predefinedCategories = [
     "Entertainment",
@@ -28,29 +27,27 @@ function OcrComponent() {
   ];
 
   useEffect(() => {
+    if (!imageFile) return;
+
     const doOcr = async () => {
-      if (imageFile) {
-        const worker = await createWorker("eng", 1);
-        const {
-          data: { text },
-        } = await worker.recognize(imageFile);
-        setOcrResult(text);
-        await worker.terminate();
-      }
+      const worker = await createWorker("eng", 1);
+      const {
+        data: { text },
+      } = await worker.recognize(imageFile);
+      setOcrResult(text);
+      await worker.terminate();
     };
+
     doOcr();
   }, [imageFile]);
 
   const parseItemsFromText = (text) => {
     const lines = text.split("\n");
-    const items = [];
     const skipWords = [
       "total",
       "subtotal",
-      "tax",
-      "swbtotel",
-      "swbtota",
       "swbtote",
+      "tax",
       "cash",
       "tender",
       "change",
@@ -61,43 +58,34 @@ function OcrComponent() {
       "credit",
     ];
 
-    for (const line of lines) {
+    return lines.reduce((acc, line) => {
       const match = line.match(/(.+?)\s+(\d+\.\d{2})$/);
-      if (match) {
-        let name = match[1].trim();
-        const price = parseFloat(match[2]);
+      if (!match) return acc;
 
-        if (
-          skipWords.some((word) => new RegExp(`\\b${word}\\b`, "i").test(name))
-        )
-          continue;
+      let name = match[1].trim();
+      const price = parseFloat(match[2]);
 
-        if (skipWords.includes(name.toLowerCase())) continue;
+      if (skipWords.some((word) => new RegExp(`\\b${word}\\b`, "i").test(name)))
+        return acc;
 
-        const quantityMatch = name.match(/^\d+\s+(.+)/);
-        if (quantityMatch) name = quantityMatch[1];
+      const quantityMatch = name.match(/^\d+\s+(.+)/);
+      if (quantityMatch) name = quantityMatch[1];
 
-        items.push({ name, price });
-      }
-    }
-    return items;
+      acc.push({ name, price });
+      return acc;
+    }, []);
   };
 
   const parsedItems = useMemo(() => parseItemsFromText(ocrResult), [ocrResult]);
 
-  // update editable state when parsedItems change
   useEffect(() => {
-    // Find max existing key in receiptItems
     const maxKey = receiptItems.length
-      ? Math.max(...receiptItems.map((item) => item.key))
+      ? Math.max(...receiptItems.map((i) => i.key))
       : -1;
-
-    // Assign keys to parsedItems starting after maxKey
     const enriched = parsedItems.map((item, idx) => ({
       ...item,
       key: maxKey + 1 + idx,
     }));
-
     setReceiptItems(enriched);
   }, [parsedItems]);
 
@@ -105,23 +93,35 @@ function OcrComponent() {
     if (e.target.files[0]) {
       setImageFile(e.target.files[0]);
       setOcrResult("Recognizing...");
+      setBackendTotal(null);
     }
   };
 
   const handleCategoryChange = (e) => {
-    const selected = e.target.value;
-    if (selected === "Other") {
+    if (e.target.value === "Other") {
       setIsOther(true);
       setCategory("");
     } else {
       setIsOther(false);
-      setCategory(selected);
+      setCategory(e.target.value);
     }
   };
 
   const handleCustomCategoryChange = (e) => {
     setCustomCategory(e.target.value);
     setCategory(e.target.value);
+  };
+
+  const fetchTotal = async (receiptId) => {
+    try {
+      const res = await axios.get(
+        `${API_URL}/api/PaypalRoutes/totalPayment/${receiptId}`
+      );
+      setBackendTotal(res.data.total);
+    } catch (error) {
+      console.error("Failed to fetch total:", error);
+      setBackendTotal(null);
+    }
   };
 
   const sendToBackend = async () => {
@@ -141,7 +141,7 @@ function OcrComponent() {
         title: "Scanned Receipt",
         body: ocrResult,
         category: finalCategory,
-        Group_Id: groupId || null,
+        Group_Id: groupId,
       },
       items: receiptItems,
     };
@@ -156,7 +156,8 @@ function OcrComponent() {
         }
       );
       alert("Receipt saved!");
-      console.log(res.data);
+      const savedReceiptId = res.data.receipt?.id;
+      if (savedReceiptId) fetchTotal(savedReceiptId);
     } catch (err) {
       console.error(err);
       alert("Error saving receipt.");
@@ -204,18 +205,23 @@ function OcrComponent() {
           </select>
         </label>
         {isOther && (
-          <div>
-            <input
-              type="text"
-              value={customCategory}
-              onChange={handleCustomCategoryChange}
-              placeholder="Enter custom category"
-            />
-          </div>
+          <input
+            type="text"
+            value={customCategory}
+            onChange={handleCustomCategoryChange}
+            placeholder="Enter custom category"
+            style={{ marginTop: "0.5rem" }}
+          />
         )}
       </div>
 
       <EditItems items={receiptItems} setItems={setReceiptItems} />
+
+      {backendTotal !== null && (
+        <p style={{ marginTop: "1rem" }}>
+          <strong>Total from backend: </strong>${backendTotal.toFixed(2)}
+        </p>
+      )}
 
       <button
         onClick={sendToBackend}

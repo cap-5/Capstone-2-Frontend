@@ -1,8 +1,16 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import "./NavBarStyles.css";
+import { useNavigate } from "react-router-dom";
 
 const NavBar = ({ user, onLogout, groupId }) => {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    onLogout(); // call your logout logic first
+    navigate("/"); // then navigate to home ("/")
+  };
+
   return (
     <nav className="navbar">
       <div className="nav-brand">
@@ -12,7 +20,9 @@ const NavBar = ({ user, onLogout, groupId }) => {
       <div className="nav-links">
         {user ? (
           <div className="user-section">
-            <Link to="/upload/1">OCR Tool</Link>
+            <Link to="/upload/1" className="nav-link">
+              OCR Tool
+            </Link>
             <Link to="/user-search" className="nav-link">
               User Search
             </Link>
@@ -23,7 +33,7 @@ const NavBar = ({ user, onLogout, groupId }) => {
               Dashboard
             </Link>
             <span className="username">Welcome, {user.username}!</span>
-            <button onClick={onLogout} className="logout-btn">
+            <button onClick={handleLogout} className="logout-btn">
               Logout
             </button>
           </div>
