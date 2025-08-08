@@ -13,6 +13,7 @@ import { io } from "socket.io-client";
 import DisplayUserInfo from "./components/DisplayUserInfo";
 import ReceiptUploader from "./components/ReceiptUploader";
 import CreateGroup from "./components/CreateGroup";
+import DisplayUserReceipts from "./components/UserReceipts";
 
 const socket = io(SOCKETS_URL, {
   withCredentials: NODE_ENV === "production",
@@ -75,6 +76,7 @@ const App = () => {
           <Route path="/VerifyRender" element={<ReceiptUploader />} />
           <Route path="U" element={<DisplayUserInfo />} />
           <Route path="L" element={<CreateGroup />} />
+          <Route path="B" element={<DisplayUserReceipts />} />
         </Routes>
       </div>
     </div>
