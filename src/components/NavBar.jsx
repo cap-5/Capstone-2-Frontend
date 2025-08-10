@@ -8,14 +8,17 @@ const NavBar = ({ user, onLogout }) => {
       <div className="nav-brand">
         <Link to="/">Capstone II</Link>
       </div>
-      
+
       <div className="nav-links">
         <Link to="/ocr" className="nav-link">
-              OCR Tool
-            </Link>
-      <Link to="/UserSearch" className="nav-link">
-              User Search
-            </Link>
+          OCR Tool
+        </Link>
+        <Link to="/UserSearch" className="nav-link">
+          User Search
+        </Link>
+        <Link to="/assign" className="nav-link">
+          Assign Items
+        </Link>
         {user ? (
           <div className="user-section">
             <span className="username">Welcome, {user.username}!</span>

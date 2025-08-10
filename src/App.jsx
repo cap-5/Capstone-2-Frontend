@@ -10,7 +10,8 @@ import Home from "./components/Home";
 import NotFound from "./components/NotFound";
 import { API_URL, SOCKETS_URL, NODE_ENV } from "./shared";
 import { io } from "socket.io-client";
-import UserSearch from "./components/UserSearch";
+import UserSearch from "./components/UserSearch"
+import AssignItems  from "./components/AssignItems";
 
 
 const socket = io(SOCKETS_URL, {
@@ -72,6 +73,7 @@ const App = () => {
           <Route path="*" element={<NotFound />} />
           <Route path="/ocr" element={<ImageRender />} />
           <Route path="/UserSearch" element={<UserSearch />} />
+          <Route path="/assign" element={<AssignItems />} />
 
         </Routes>
       </div>
