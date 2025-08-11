@@ -10,6 +10,8 @@ const UserSearch = () => {
   const [suggestions, setSuggestions] = useState([]); // Autocomplete results for search input
   const [currentPage, setCurrentPage] = useState(1); // Tracks current page number
   const [totalPages, setTotalPages] = useState(1); // Tracks total number of pages available from backend 
+  const [selectedGroupId, setSelectedGroupId] = useState(""); // Invite
+
 
   // Fetches users from the backened with pagination search 
   const fetchUsers = async () => {
@@ -42,7 +44,7 @@ const UserSearch = () => {
     }
   };
 
-  // Fetch on initial load
+  // Fetch on initial load 
   useEffect(() => {
     fetchUsers(); // Loads users immediately 
   }, [currentPage]);
@@ -52,6 +54,35 @@ const UserSearch = () => {
     setCurrentPage(1); // Reset to page 1 when searching
     fetchUsers(); // Fetches data
     setSuggestions([]); 
+  };
+
+  const handleInvite = async (receiverId) => {
+    if (!selectedGroupId) {
+      alert("Please select a group first.");
+      return;
+    }
+
+    try {
+      const res = await axios.post(
+        `${API_URL}/api/group/invite`,
+        {
+          receiverId,
+          GroupId: selectedGroupId,
+        },
+        {
+          withCredentials: true,
+        }
+      );
+
+      alert("Invite sent successfully!");
+    } catch (error) {
+      console.error("Invite failed:", error);
+      if (error.response?.data?.error) {
+        alert(`Invite failed: ${error.response.data.error}`);
+      } else {
+        alert("Failed to send invite.");
+      }
+    }
   };
 
   return (
@@ -114,6 +145,24 @@ const UserSearch = () => {
         )}
       </div>
 
+       {/* Group Selection Dropdown */}
+      <div style={{ marginBottom: "10px" }}>
+        <label htmlFor="group-select" style={{ marginRight: "10px" }}>
+          Select a group:
+        </label>
+        <select
+          id="group-select"
+          value={selectedGroupId}
+          onChange={(e) => setSelectedGroupId(e.target.value)}
+          style={{ padding: "6px" }}
+        >
+          <option value="">-- Choose Group --</option>
+          <option value="1">Group 1</option>
+          <option value="2">Group 2</option>
+          {/* Later, fetch your actual groups dynamically */}
+        </select>
+      </div>
+
       {/* Loading */}
       {loading && <p>Loading users...</p>}
 
@@ -123,7 +172,9 @@ const UserSearch = () => {
           users.map((u) => (
             <li key={u.id}>
               <strong style={{ marginRight: "10px" }}>{u.username}</strong> 
-              <button style={{ padding: "5px 20px" }}>Invite</button>
+              <button onClick={() => handleInvite(u.id)} style={{ padding: "5px 20px" }}>
+                Invite 
+              </button>
             </li>
           ))
         ) : (

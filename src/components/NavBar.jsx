@@ -16,6 +16,9 @@ const NavBar = ({ user, onLogout }) => {
       <Link to="/UserSearch" className="nav-link">
               User Search
             </Link>
+             <Link to="/Group" className="nav-link">
+              Groups
+            </Link>
         {user ? (
           <div className="user-section">
             <span className="username">Welcome, {user.username}!</span>
