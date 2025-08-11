@@ -27,7 +27,7 @@ function OcrComponent() {
   const [isOther, setIsOther] = useState(false);
   const [backendTotal, setBackendTotal] = useState(null);
 
-  const groupId = 1; // Hardcoded for now
+  const groupId = 3; // Hardcoded for now
 
   const predefinedCategories = [
     "Entertainment",
@@ -90,14 +90,6 @@ function OcrComponent() {
       if (skipWords.some((word) => new RegExp(`\\b${word}\\b`, "i").test(name)))
         return acc;
 
-<<<<<<< HEAD
-        items.push({ name, price, type });
-      }
-    }
-
-    return items;
-  };
-=======
       // Remove quantity number from item name, e.g. "2 apples" becomes "apples"
       const quantityMatch = name.match(/^\d+\s+(.+)/);
       if (quantityMatch) name = quantityMatch[1];
@@ -112,7 +104,6 @@ function OcrComponent() {
     () => parseItemsFromText(editedBody),
     [editedBody]
   );
->>>>>>> 5a5e9cb9a52b7df6ee7601e2f0ce023cf2c96afd
 
   useEffect(() => {
     // Get the current highest key in receiptItems, or -1 if empty
@@ -288,13 +279,8 @@ function OcrComponent() {
         disabled={isSaving || !receiptItems.length}
       >
         {isSaving ? "Saving..." : "Save to Database"}
-<<<<<<< HEAD
-      </button>
-    </div>
-=======
       </Button>
     </Box>
->>>>>>> 5a5e9cb9a52b7df6ee7601e2f0ce023cf2c96afd
   );
 }
 

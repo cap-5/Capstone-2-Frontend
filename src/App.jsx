@@ -13,12 +13,9 @@ import { io } from "socket.io-client";
 import UserSearch from "./components/UserSearch";
 import DisplayUserInfo from "./components/DisplayUserInfo";
 import CreateGroup from "./components/CreateGroup";
-<<<<<<< HEAD
-=======
 import ImageRender from "./components/ImageRender";
 import Dashboard from "./components/Dashboard";
 import AssignItems  from "./components/AssignItems";
->>>>>>> 5a5e9cb9a52b7df6ee7601e2f0ce023cf2c96afd
 
 const socket = io(SOCKETS_URL, {
   withCredentials: NODE_ENV === "production",
@@ -66,23 +63,6 @@ const App = () => {
     }
   };
 
-<<<<<<< HEAD
-  return (
-    <div>
-      <NavBar user={user} onLogout={handleLogout} />
-      <div className="app">
-        <Routes>
-          <Route path="/login" element={<Login setUser={setUser} />} />
-          <Route path="/signup" element={<Signup setUser={setUser} />} />
-          <Route exact path="/" element={<Home />} />
-          <Route path="*" element={<NotFound />} />
-          <Route path="/ocr" element={<ImageRender />} />
-          <Route path="/UserSearch" element={<UserSearch />} />
-          <Route path="U" element={<DisplayUserInfo />} />
-          <Route path="L" element={<CreateGroup />} />
-        </Routes>
-      </div>
-=======
 return (
   <div>
     <NavBar user={user} onLogout={handleLogout} />
@@ -102,7 +82,6 @@ return (
         </Route>
 
       </Routes>
->>>>>>> 5a5e9cb9a52b7df6ee7601e2f0ce023cf2c96afd
     </div>
   </div>
 );

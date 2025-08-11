@@ -1,16 +1,22 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { API_URL } from "../shared";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+// import { useParams } from "react-router-dom"; // Uncomment later
 
 const UserSearch = () => {
-  const [users, setUsers] = useState([]); // Displays all users
-  const [search, setSearch] = useState(""); // Search input
-  const [loading, setLoading] = useState(false); // Loading
-  const [suggestions, setSuggestions] = useState([]); // Autocomplete results for search input
-  const [currentPage, setCurrentPage] = useState(1); // Tracks current page number
-  const [totalPages, setTotalPages] = useState(1); // Tracks total number of pages available from backend 
+  const [users, setUsers] = useState([]);
+  const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [suggestions, setSuggestions] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [invitedUserIds, setInvitedUserIds] = useState([]);
 
-  // Fetches users from the backened with pagination search 
+  // const { groupId } = useParams();
+  const groupId = 1;
+
   const fetchUsers = async () => {
     try {
       setLoading(true);
@@ -18,39 +24,56 @@ const UserSearch = () => {
         params: {
           page: currentPage,
           limit: 10,
-          search: search, 
+          search: search,
         },
         withCredentials: true,
       });
       setUsers(response.data.users || []);
-      setTotalPages(response.data.totalPages || 1 );
+      setTotalPages(response.data.totalPages || 1);
     } catch (error) {
       console.error("Failed to fetch users:", error);
+      toast.error("Failed to fetch users.");
     } finally {
       setLoading(false);
     }
   };
 
-  // Fetches username suggestions for autocomplete
   const fetchSuggestions = async (searchTerm) => {
     try {
-      const response = await axios.get(`${API_URL}/api/users/search?query=${searchTerm}`); 
-      setSuggestions(response.data || []); 
+      const response = await axios.get(`${API_URL}/api/users/search?query=${searchTerm}`);
+      setSuggestions(response.data || []);
     } catch (error) {
       console.error("Error fetching suggestions:", error);
     }
   };
 
-  // Fetch on initial load
   useEffect(() => {
-    fetchUsers(); // Loads users immediately 
+    fetchUsers();
   }, [currentPage]);
 
-  // This calls "fetchUsers" when user types and presses "Search"
   const handleSearch = () => {
-    setCurrentPage(1); // Reset to page 1 when searching
-    fetchUsers(); // Fetches data
-    setSuggestions([]); 
+    setCurrentPage(1);
+    fetchUsers();
+    setSuggestions([]);
+  };
+
+  const handleInvite = async (receiverId) => {
+    try {
+      await axios.post(
+        `${API_URL}/api/group/invite`,
+        {
+          receiverId, 
+          GroupId: groupId,
+        },
+        { withCredentials: true }
+      );
+
+      toast.success("Invite sent successfully!");
+      setInvitedUserIds((prev) => [...prev, receiverId]);
+    } catch (error) {
+      console.error("Failed to send invite:", error.response?.data || error.message);
+      toast.error(`${error.response?.data?.error || "Failed to send invite."}`);
+    }
   };
 
   return (
@@ -72,6 +95,11 @@ const UserSearch = () => {
               setSuggestions([]);
             }
           }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              handleSearch();
+            }
+          }}
           style={{ padding: "8px", width: "250px" }}
         />
         <button onClick={handleSearch} style={{ marginLeft: "10px", padding: "8px 12px" }}>
@@ -80,25 +108,27 @@ const UserSearch = () => {
 
         {/* Autocomplete Suggestions */}
         {suggestions.length > 0 && (
-          <ul style={{
-            border: "1px solid #ccc",
-            maxHeight: "150px",
-            overflowY: "auto",
-            width: "250px",
-            backgroundColor: "white",
-            position: "absolute",
-            zIndex: 10,
-            marginTop: "5px",
-            padding: 0,
-            listStyle: "none"
-          }}>
+          <ul
+            style={{
+              border: "1px solid #ccc",
+              maxHeight: "150px",
+              overflowY: "auto",
+              width: "250px",
+              backgroundColor: "white",
+              position: "absolute",
+              zIndex: 10,
+              marginTop: "5px",
+              padding: 0,
+              listStyle: "none",
+            }}
+          >
             {suggestions.map((s) => (
               <li
                 key={s.id}
                 style={{
                   padding: "8px",
                   cursor: "pointer",
-                  borderBottom: "1px solid #eee"
+                  borderBottom: "1px solid #eee",
                 }}
                 onClick={() => {
                   setSearch(s.username);
@@ -120,16 +150,22 @@ const UserSearch = () => {
       <ul>
         {users.length > 0 ? (
           users.map((u) => (
-            <li key={u.id}>
-              <strong style={{ marginRight: "10px" }}>{u.username}</strong> 
-              <button style={{ padding: "5px 20px" }}>Invite</button>
+            <li key={u.id} style={{ marginBottom: "8px" }}>
+              <strong style={{ marginRight: "10px" }}>{u.username}</strong>
+              <button
+                style={{ padding: "5px 20px" }}
+                onClick={() => handleInvite(u.id)}
+                disabled={invitedUserIds.includes(u.id)}
+              >
+                {invitedUserIds.includes(u.id) ? "Invited" : "Invite"}
+              </button>
             </li>
           ))
         ) : (
           <p>No users found.</p>
         )}
       </ul>
-      
+
       {/* Pagination Controls */}
       <div style={{ marginTop: "15px", display: "flex", alignItems: "center" }}>
         <button
@@ -152,6 +188,18 @@ const UserSearch = () => {
           Next
         </button>
       </div>
+
+      {/* Toast Notifications */}
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
     </div>
   );
 };

@@ -5,6 +5,13 @@ import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
+import { Home, Bell, Settings, HelpCircle, Shield } from "lucide-react";
+
+// Tabs with paths and icons
+const tabs = [
+ 
+];
+
 
 const NavBar = ({ user, onLogout }) => {
   const navigate = useNavigate();
@@ -15,39 +22,6 @@ const NavBar = ({ user, onLogout }) => {
   };
 
   return (
-<<<<<<< HEAD
-    <nav className="navbar">
-      <div className="nav-brand">
-        <Link to="/">Capstone II</Link>
-      </div>
-      
-      <div className="nav-links">
-        <Link to="/ocr" className="nav-link">
-              OCR Tool
-            </Link>
-      <Link to="/UserSearch" className="nav-link">
-              User Search
-            </Link>
-        {user ? (
-          <div className="user-section">
-            <span className="username">Welcome, {user.username}!</span>
-            <button onClick={onLogout} className="logout-btn">
-              Logout
-            </button>
-          </div>
-        ) : (
-          <div className="auth-links">
-            <Link to="/login" className="nav-link">
-              Login
-            </Link>
-            <Link to="/signup" className="nav-link">
-              Sign Up
-            </Link>
-          </div>
-        )}
-      </div>
-    </nav>
-=======
     <AppBar position="sticky" color="default" elevation={1}>
       <Toolbar
         sx={{
@@ -71,10 +45,28 @@ const NavBar = ({ user, onLogout }) => {
           Capstone II
         </Typography>
 
-        {/* Links */}
+        {/* Navigation Links */}
         <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
           {user ? (
             <>
+              {/* Dynamic Tabs */}
+              {tabs.map((tab, index) => {
+                if (tab.type === "separator") return null; // Skip separator
+                const Icon = tab.icon;
+                return (
+                  <Button
+                    key={index}
+                    component={RouterLink}
+                    to={tab.path}
+                    color="inherit"
+                    startIcon={<Icon size={18} />}
+                  >
+                    {tab.title}
+                  </Button>
+                );
+              })}
+
+              {/* Other Static Buttons (Optional — remove if redundant) */}
               <Button component={RouterLink} to="/upload/1" color="inherit">
                 OCR Tool
               </Button>
@@ -87,16 +79,14 @@ const NavBar = ({ user, onLogout }) => {
               <Button component={RouterLink} to="/assign" color="inherit">
                 Assign
               </Button>
-              <Button component={RouterLink} to="/dashboard" color="inherit">
-                Dashboard
-              </Button>
+
+              {/* User Info + Logout */}
               <Typography
                 variant="body1"
                 sx={{ color: "text.secondary", ml: 2, mr: 1 }}
               >
                 Welcome, {user.username}!
               </Typography>
-
               <Button
                 onClick={handleLogout}
                 variant="contained"
@@ -119,8 +109,8 @@ const NavBar = ({ user, onLogout }) => {
         </Box>
       </Toolbar>
     </AppBar>
->>>>>>> 5a5e9cb9a52b7df6ee7601e2f0ce023cf2c96afd
   );
 };
 
 export default NavBar;
+
