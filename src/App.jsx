@@ -14,7 +14,7 @@ import DisplayUserInfo from "./components/DisplayUserInfo";
 import ReceiptUploader from "./components/ReceiptUploader";
 import CreateGroup from "./components/CreateGroup";
 import DisplayUserReceipts from "./components/UserReceipts";
-
+import GroupRecipts from "./components/GroupRecipts";
 const socket = io(SOCKETS_URL, {
   withCredentials: NODE_ENV === "production",
 });
@@ -74,9 +74,10 @@ const App = () => {
           <Route path="*" element={<NotFound />} />
           <Route path="/ocr" element={<ImageRender />} />
           <Route path="/VerifyRender" element={<ReceiptUploader />} />
-          <Route path="U" element={<DisplayUserInfo />} />
-          <Route path="L" element={<CreateGroup />} />
-          <Route path="B" element={<DisplayUserReceipts />} />
+          <Route path="DisplayUserinfo" element={<DisplayUserInfo />} />
+          <Route path="createAGroup" element={<CreateGroup />} />
+          <Route path="UsersReceipts" element={<DisplayUserReceipts />} />
+          <Route path="groupReceipts" element={<GroupRecipts />} />
         </Routes>
       </div>
     </div>
