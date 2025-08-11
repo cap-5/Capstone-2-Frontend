@@ -1,5 +1,15 @@
 import React, { useEffect, useRef } from "react";
 
+import {
+  Box,
+  TextField,
+  Button,
+  Typography,
+  Stack,
+  IconButton,
+} from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
+
 function EditItems({ items, setItems }) {
   // const initialData = [
   //   { id: 1, name: "Ttemt", price: 10.0 },
@@ -55,39 +65,57 @@ function EditItems({ items, setItems }) {
   };
 
   return (
-    <div>
-      <h2>Edit Items:</h2>
-      <ul>
+    <Box>
+      <Typography variant="h6" gutterBottom>
+        Edit Items:
+      </Typography>
+
+      <Stack spacing={2}>
         {items.map((item) => (
-          <li key={item.key}>
-            <label htmlFor={`name-${item.key}`}>Item Name: </label>
-            <input
-              type="text"
-              id={`name-${item.key}`}
+          <Stack
+            key={item.key}
+            direction="row"
+            spacing={2}
+            alignItems="center"
+            sx={{ borderBottom: "1px solid #ddd", pb: 1 }}
+          >
+            <TextField
+              label="Item Name"
               value={item.name}
               onChange={(e) => handleEditItemName(item.key, e.target.value)}
+              size="small"
+              sx={{ flexGrow: 1 }}
             />
 
-            <label htmlFor={`price-${item.key}`}> Price: </label>
-            <input
+            <TextField
+              label="Price"
               type="number"
-              id={`price-${item.key}`}
               value={item.price}
-              step="0.01"
               onChange={(e) => handleEditItemPrice(item.key, e.target.value)}
+              size="small"
+              sx={{ width: 100 }}
             />
 
-            <button type="button" onClick={() => handleDeleteItem(item.key)}>
-              Delete
-            </button>
-          </li>
+            <IconButton
+              aria-label="delete"
+              color="error"
+              onClick={() => handleDeleteItem(item.key)}
+            >
+              <DeleteIcon />
+            </IconButton>
+          </Stack>
         ))}
-      </ul>
+      </Stack>
 
-      <button type="button" onClick={handleAddItem}>
+      <Button
+        variant="contained"
+        onClick={handleAddItem}
+        sx={{ mt: 3 }}
+        fullWidth
+      >
         Add Item
-      </button>
-    </div>
+      </Button>
+    </Box>
   );
 }
 

@@ -4,20 +4,21 @@ import axios from "axios";
 import EditItems from "./EditItems";
 import { API_URL } from "../shared";
 
+// MUI imports for UI components and styling
 import {
   Box,
-  Button,
-  Typography,
-  TextField,
-  MenuItem,
-  Select,
-  InputLabel,
-  FormControl,
+  Button, // Styled clickable button component
+  Typography, // Text component with predefined variants (headings, subtitles)
+  TextField, // Input field or textarea with styling
+  MenuItem, // Individual selectable item inside Select dropdown
+  Select, // Styled dropdown select component
+  InputLabel, // Label for Select input
+  FormControl, // Wrapper for form controls to handle label/input layout/accessibility
 } from "@mui/material";
 
 function OcrComponent() {
   const [ocrResult, setOcrResult] = useState("");
-  const [editedBody, setEditedBody] = useState(""); // <-- new state for editable receipt text
+  const [editedBody, setEditedBody] = useState(""); // Editable OCR text
   const [imageFile, setImageFile] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
   const [receiptItems, setReceiptItems] = useState([]);
@@ -42,12 +43,15 @@ function OcrComponent() {
     if (!imageFile) return;
 
     const doOcr = async () => {
+      // Create a new OCR worker with English language support
       const worker = await createWorker("eng", 1);
+
+      // Run OCR on the uploaded image file to extract text
       const {
         data: { text },
       } = await worker.recognize(imageFile);
       setOcrResult(text);
-      setEditedBody(text); // Initialize editedBody with OCR text
+      setEditedBody(text); // Initialize editable text with OCR output
       await worker.terminate();
     };
 
@@ -73,15 +77,20 @@ function OcrComponent() {
     ];
 
     return lines.reduce((acc, line) => {
+      // Matches lines that end with a price formatted as digits + decimal + two digits (e.g. "15.00")
       const match = line.match(/(.+?)\s+(\d+\.\d{2})$/);
+
+      // If line doesn't match the pattern, skip it and continue
       if (!match) return acc;
 
       let name = match[1].trim();
       const price = parseFloat(match[2]);
 
+      // Ignore lines containing keywords like "total", "tax" etc.
       if (skipWords.some((word) => new RegExp(`\\b${word}\\b`, "i").test(name)))
         return acc;
 
+      // Remove quantity number from item name, e.g. "2 apples" becomes "apples"
       const quantityMatch = name.match(/^\d+\s+(.+)/);
       if (quantityMatch) name = quantityMatch[1];
 
@@ -90,27 +99,34 @@ function OcrComponent() {
     }, []);
   };
 
+  // Uses useMemo to only parse the receipt text when the user edits the text
   const parsedItems = useMemo(
     () => parseItemsFromText(editedBody),
     [editedBody]
-  ); // parse from editedBody now
+  );
 
   useEffect(() => {
+    // Get the current highest key in receiptItems, or -1 if empty
     const maxKey = receiptItems.length
       ? Math.max(...receiptItems.map((i) => i.key))
       : -1;
+
+    // Create a new array 'enriched' by adding unique keys to each parsed item
     const enriched = parsedItems.map((item, idx) => ({
       ...item,
-      key: maxKey + 1 + idx,
+      key: maxKey + 1 + idx, // Assign unique key by incrementing from maxKey
     }));
+
+    // Update receiptItems state with the enriched array containing keys
     setReceiptItems(enriched);
   }, [parsedItems]);
 
+ 
   const handleImageUpload = (e) => {
     if (e.target.files[0]) {
-      setImageFile(e.target.files[0]);
-      setOcrResult("Recognizing...");
-      setBackendTotal(null);
+      setImageFile(e.target.files[0]); // Save the uploaded file in state
+      setOcrResult("Recognizing..."); 
+      setBackendTotal(null); // Clear any previous total value
     }
   };
 
@@ -135,6 +151,7 @@ function OcrComponent() {
       return;
     }
 
+    // if other true then custom
     const finalCategory = isOther ? customCategory : category;
     if (!finalCategory) {
       alert("Please select or enter a category.");
@@ -144,13 +161,12 @@ function OcrComponent() {
     try {
       setIsSaving(true);
 
-      // Save receipt + items + totalPay in one request
       const res = await axios.post(
         `${API_URL}/api/receipts/${groupId}/Upload`,
         {
           receipt: {
             title: "Scanned Receipt",
-            body: editedBody, // <-- send edited text here
+            body: editedBody,
             category: finalCategory,
             Group_Id: groupId,
           },
@@ -200,17 +216,20 @@ function OcrComponent() {
       <Typography variant="subtitle1" mt={3} mb={1}>
         OCR Result (editable):
       </Typography>
+
       <TextField
-        multiline
+        multiline // Makes this TextField behave like a textarea (multi-line input)
         minRows={6}
         fullWidth
-        variant="outlined"
-        value={editedBody}
+        variant="outlined" // Gives the input a visible border outline (MUI style)
+        value={editedBody} // Controlled component: the displayed text is from the React state 'editedBody'
         onChange={(e) => setEditedBody(e.target.value)}
+        /* onChange handler updates 'editedBody' state as user types,
+     making this TextField editable by syncing the input's value with state */
       />
-
       <FormControl fullWidth sx={{ mt: 3 }}>
         <InputLabel id="category-label">Category</InputLabel>
+
         <Select
           labelId="category-label"
           value={isOther ? "Other" : category}
@@ -220,6 +239,8 @@ function OcrComponent() {
           <MenuItem value="" disabled>
             Select a category
           </MenuItem>
+
+          {/* Map through predefined categories to create selectable options */}
           {predefinedCategories.map((cat) => (
             <MenuItem key={cat} value={cat}>
               {cat}
