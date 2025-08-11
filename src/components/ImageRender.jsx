@@ -129,7 +129,6 @@ function OcrComponent() {
       alert("No items to save.");
       return;
     }
-  };
 
     const finalCategory = isOther ? customCategory : category;
     if (!finalCategory) {
@@ -152,13 +151,13 @@ function OcrComponent() {
       const res = await axios.post(
         `${API_URL}/api/receipts/${groupId}/Upload`,
         payload,
-        {
-          withCredentials: true,
-        }
+        { withCredentials: true }
       );
       alert("Receipt saved!");
       const savedReceiptId = res.data.receipt?.id;
-      if (savedReceiptId) fetchTotal(savedReceiptId);
+      if (savedReceiptId) {
+        fetchTotal(savedReceiptId);
+      }
     } catch (err) {
       console.error(err);
       alert("Error saving receipt.");

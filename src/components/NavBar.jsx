@@ -32,6 +32,9 @@ const NavBar = ({ user, onLogout, groupId }) => {
             <Link to="/dashboard" className="nav-link">
               Dashboard
             </Link>
+            <Link to ="/assign" className="nav-link">
+               assign
+            </Link>
             <span className="username">Welcome, {user.username}!</span>
             <button onClick={handleLogout} className="logout-btn">
               Logout

@@ -10,17 +10,12 @@ import Home from "./components/Home";
 import NotFound from "./components/NotFound";
 import { API_URL, SOCKETS_URL, NODE_ENV } from "./shared";
 import { io } from "socket.io-client";
-<<<<<<< HEAD
 import UserSearch from "./components/UserSearch";
 import DisplayUserInfo from "./components/DisplayUserInfo";
 import CreateGroup from "./components/CreateGroup";
 import ImageRender from "./components/ImageRender";
 import Dashboard from "./components/Dashboard";
-=======
-import UserSearch from "./components/UserSearch"
 import AssignItems  from "./components/AssignItems";
-
->>>>>>> origin/assign-items
 
 const socket = io(SOCKETS_URL, {
   withCredentials: NODE_ENV === "production",
