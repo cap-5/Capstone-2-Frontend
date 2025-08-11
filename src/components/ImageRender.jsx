@@ -129,6 +129,7 @@ function OcrComponent() {
       alert("No items to save.");
       return;
     }
+  };
 
     const finalCategory = isOther ? customCategory : category;
     if (!finalCategory) {

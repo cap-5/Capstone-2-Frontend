@@ -10,11 +10,17 @@ import Home from "./components/Home";
 import NotFound from "./components/NotFound";
 import { API_URL, SOCKETS_URL, NODE_ENV } from "./shared";
 import { io } from "socket.io-client";
+<<<<<<< HEAD
 import UserSearch from "./components/UserSearch";
 import DisplayUserInfo from "./components/DisplayUserInfo";
 import CreateGroup from "./components/CreateGroup";
 import ImageRender from "./components/ImageRender";
 import Dashboard from "./components/Dashboard";
+=======
+import UserSearch from "./components/UserSearch"
+import AssignItems  from "./components/AssignItems";
+
+>>>>>>> origin/assign-items
 
 const socket = io(SOCKETS_URL, {
   withCredentials: NODE_ENV === "production",
@@ -74,7 +80,7 @@ return (
         <Route path="/upload/:groupId" element={<ImageRender />} />
         <Route path="/user-search" element={<UserSearch />} />
         <Route path="/create-group" element={<CreateGroup />} />
-
+        <Route path="/assign" element={<AssignItems />} />
          {/* nested navbar layout */}
         <Route path="/dashboard" element={<Dashboard />}>
           <Route path="profile" element={<DisplayUserInfo />} />
