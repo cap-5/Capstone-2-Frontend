@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import "./CreateGroupstyle.css";
 const MakeGroup = () => {
   const [groupData, setGroupData] = useState({
     description: "",

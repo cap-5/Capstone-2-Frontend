@@ -13,12 +13,16 @@ import { io } from "socket.io-client";
 import UserSearch from "./components/UserSearch";
 import DisplayUserInfo from "./components/DisplayUserInfo";
 import CreateGroup from "./components/CreateGroup";
+<<<<<<< HEAD
+=======
+import ImageRender from "./components/ImageRender";
+import Dashboard from "./components/Dashboard";
+import AssignItems  from "./components/AssignItems";
+>>>>>>> 5a5e9cb9a52b7df6ee7601e2f0ce023cf2c96afd
 
 const socket = io(SOCKETS_URL, {
   withCredentials: NODE_ENV === "production",
 });
-
-import ImageRender from "./components/ImageRender";
 
 const App = () => {
   const [user, setUser] = useState(null);
@@ -62,6 +66,7 @@ const App = () => {
     }
   };
 
+<<<<<<< HEAD
   return (
     <div>
       <NavBar user={user} onLogout={handleLogout} />
@@ -77,8 +82,30 @@ const App = () => {
           <Route path="L" element={<CreateGroup />} />
         </Routes>
       </div>
+=======
+return (
+  <div>
+    <NavBar user={user} onLogout={handleLogout} />
+    <div className="app">
+      <Routes>
+        <Route path="/login" element={<Login setUser={setUser} />} />
+        <Route path="/signup" element={<Signup setUser={setUser} />} />
+        <Route path="/" element={<Home />} />
+        <Route path="*" element={<NotFound />} />
+        <Route path="/upload/:groupId" element={<ImageRender />} />
+        <Route path="/user-search" element={<UserSearch />} />
+        <Route path="/create-group" element={<CreateGroup />} />
+        <Route path="/assign" element={<AssignItems />} />
+         {/* nested navbar layout */}
+        <Route path="/dashboard" element={<Dashboard />}>
+          <Route path="profile" element={<DisplayUserInfo />} />
+        </Route>
+
+      </Routes>
+>>>>>>> 5a5e9cb9a52b7df6ee7601e2f0ce023cf2c96afd
     </div>
-  );
+  </div>
+);
 };
 
 const Root = () => {
