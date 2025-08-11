@@ -4,8 +4,20 @@ import axios from "axios";
 import EditItems from "./EditItems";
 import { API_URL } from "../shared";
 
+import {
+  Box,
+  Button,
+  Typography,
+  TextField,
+  MenuItem,
+  Select,
+  InputLabel,
+  FormControl,
+} from "@mui/material";
+
 function OcrComponent() {
   const [ocrResult, setOcrResult] = useState("");
+  const [editedBody, setEditedBody] = useState(""); // <-- new state for editable receipt text
   const [imageFile, setImageFile] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
   const [receiptItems, setReceiptItems] = useState([]);
@@ -35,6 +47,7 @@ function OcrComponent() {
         data: { text },
       } = await worker.recognize(imageFile);
       setOcrResult(text);
+      setEditedBody(text); // Initialize editedBody with OCR text
       await worker.terminate();
     };
 
@@ -47,6 +60,7 @@ function OcrComponent() {
       "total",
       "subtotal",
       "swbtote",
+      "Swtotal",
       "tax",
       "cash",
       "tender",
@@ -76,7 +90,10 @@ function OcrComponent() {
     }, []);
   };
 
-  const parsedItems = useMemo(() => parseItemsFromText(ocrResult), [ocrResult]);
+  const parsedItems = useMemo(
+    () => parseItemsFromText(editedBody),
+    [editedBody]
+  ); // parse from editedBody now
 
   useEffect(() => {
     const maxKey = receiptItems.length
@@ -112,18 +129,6 @@ function OcrComponent() {
     setCategory(e.target.value);
   };
 
-  const fetchTotal = async (receiptId) => {
-    try {
-      const res = await axios.get(
-        `${API_URL}/api/PaypalRoutes/totalPayment/${receiptId}`
-      );
-      setBackendTotal(res.data.total);
-    } catch (error) {
-      console.error("Failed to fetch total:", error);
-      setBackendTotal(null);
-    }
-  };
-
   const sendToBackend = async () => {
     if (!receiptItems.length) {
       alert("No items to save.");
@@ -136,28 +141,29 @@ function OcrComponent() {
       return;
     }
 
-    const payload = {
-      receipt: {
-        title: "Scanned Receipt",
-        body: ocrResult,
-        category: finalCategory,
-        Group_Id: groupId,
-      },
-      items: receiptItems,
-    };
-
     try {
       setIsSaving(true);
+
+      // Save receipt + items + totalPay in one request
       const res = await axios.post(
         `${API_URL}/api/receipts/${groupId}/Upload`,
-        payload,
+        {
+          receipt: {
+            title: "Scanned Receipt",
+            body: editedBody, // <-- send edited text here
+            category: finalCategory,
+            Group_Id: groupId,
+          },
+          items: receiptItems,
+        },
         { withCredentials: true }
       );
+
       alert("Receipt saved!");
-      const savedReceiptId = res.data.receipt?.id;
-      if (savedReceiptId) {
-        fetchTotal(savedReceiptId);
-      }
+
+      // Get totalPay directly from saved receipt response
+      const savedReceipt = res.data.receipt;
+      setBackendTotal(savedReceipt.totalPay);
     } catch (err) {
       console.error(err);
       alert("Error saving receipt.");
@@ -167,70 +173,93 @@ function OcrComponent() {
   };
 
   return (
-    <div style={{ padding: "1rem", maxWidth: "600px", margin: "auto" }}>
-      <h2>Receipt OCR Uploader</h2>
+    <Box
+      sx={{
+        maxWidth: 600,
+        mx: "auto",
+        p: 3,
+        borderRadius: 2,
+        boxShadow: 3,
+        bgcolor: "background.paper",
+      }}
+    >
+      <Typography variant="h4" mb={3} align="center">
+        Receipt OCR Uploader
+      </Typography>
 
-      <input type="file" accept="image/*" onChange={handleImageUpload} />
-      <br />
-      <br />
+      <Button variant="contained" component="label" fullWidth>
+        Upload Image
+        <input
+          type="file"
+          accept="image/*"
+          hidden
+          onChange={handleImageUpload}
+        />
+      </Button>
 
-      <p>
-        <strong>OCR Result:</strong>
-      </p>
-      <pre
-        style={{
-          background: "#f4f4f4",
-          padding: "1rem",
-          whiteSpace: "pre-wrap",
-        }}
-      >
-        {ocrResult}
-      </pre>
+      <Typography variant="subtitle1" mt={3} mb={1}>
+        OCR Result (editable):
+      </Typography>
+      <TextField
+        multiline
+        minRows={6}
+        fullWidth
+        variant="outlined"
+        value={editedBody}
+        onChange={(e) => setEditedBody(e.target.value)}
+      />
 
-      <div style={{ marginTop: "1rem" }}>
-        <label>
-          Category:
-          <select
-            value={isOther ? "Other" : category}
-            onChange={handleCategoryChange}
-          >
-            <option value="" disabled>
-              Select a category
-            </option>
-            {predefinedCategories.map((cat) => (
-              <option key={cat} value={cat}>
-                {cat}
-              </option>
-            ))}
-          </select>
-        </label>
-        {isOther && (
-          <input
-            type="text"
-            value={customCategory}
-            onChange={handleCustomCategoryChange}
-            placeholder="Enter custom category"
-            style={{ marginTop: "0.5rem" }}
-          />
-        )}
-      </div>
+      <FormControl fullWidth sx={{ mt: 3 }}>
+        <InputLabel id="category-label">Category</InputLabel>
+        <Select
+          labelId="category-label"
+          value={isOther ? "Other" : category}
+          label="Category"
+          onChange={handleCategoryChange}
+        >
+          <MenuItem value="" disabled>
+            Select a category
+          </MenuItem>
+          {predefinedCategories.map((cat) => (
+            <MenuItem key={cat} value={cat}>
+              {cat}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
 
-      <EditItems items={receiptItems} setItems={setReceiptItems} />
-
-      {backendTotal !== null && (
-        <p style={{ marginTop: "1rem" }}>
-          <strong>Total from backend: </strong>${backendTotal.toFixed(2)}
-        </p>
+      {isOther && (
+        <TextField
+          fullWidth
+          variant="outlined"
+          placeholder="Enter custom category"
+          value={customCategory}
+          onChange={handleCustomCategoryChange}
+          sx={{ mt: 2 }}
+        />
       )}
 
-      <button
+      <Box mt={3}>
+        <EditItems items={receiptItems} setItems={setReceiptItems} />
+      </Box>
+
+      {backendTotal !== null && (
+        <Typography variant="h6" mt={3}>
+          Total from backend: ${backendTotal.toFixed(2)}
+        </Typography>
+      )}
+
+      <Button
+        variant="contained"
+        color="primary"
+        fullWidth
+        sx={{ mt: 3 }}
         onClick={sendToBackend}
         disabled={isSaving || !receiptItems.length}
-        style={{ marginTop: "1rem" }}
       >
         {isSaving ? "Saving..." : "Save to Database"}
-      </button>
-    </div>
+      </Button>
+    </Box>
   );
 }
 
