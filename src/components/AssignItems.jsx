@@ -17,22 +17,46 @@ export default function AssignItems() {
   const [payers, setPayers] = useState(dummyGroup);
   /* 
   Store item-payer assignments like this:
-    { itemID: x, payerId: y }
-  Use a set because no payer can be assigned the same item more than once.
+    { itemId: x, payerId: y }
   */
-  const [assignments, setAssignments] = useState(new Set());
+  const [assignments, setAssignments] = useState([]);
 
   console.log("ASSIGNMENTS: ", assignments);
 
   function handleAssignItem(e, item, payer) {
     if (e.target.checked) {
-      const newAssignments = new Set(assignments);
-      newAssignments.add({itemID: item, payerID: payer});
-      setAssignments(newAssignments);
+      setAssignments([...assignments, { itemId: item, payerId: payer }]);
     } else {
-      const newAssignments = new Set(assignments);
-      newAssignments.delete({ itemID: item, payerID: payer });
-      setAssignments(newAssignments);
+      setAssignments(
+        assignments.filter(
+          (assignment) =>
+            assignment.itemId !== item && assignment.payerId !== payer
+        )
+      );
+    }
+  }
+
+  function calculateTotal(receipt, payer) {
+    /* 
+    For each item in the receipt, find the number of payers who have been assigned that item.
+    Divide the price of that item by that number.
+    Add the divided price to the total of each payer.
+    */
+
+/*     let total = 0;
+    for (let i = 0; i < assignments.length; i++) {
+      if (assignments[i].payerId === payer) {
+        const id = assignments[i].itemId;
+        const item = dummyReceipt.find((item) => item.id === id);
+        const price = item.price;
+        total += price;
+      }
+    }
+    return total; */
+    for (let i = 0; i < receipt.length; i++) {
+      const item = receipt[i];
+      const numPayers = assignments.filter(assignment => assignment.itemId === item.id).length;
+      const splitPrice = item.price / numPayers;
     }
   }
 
@@ -47,7 +71,7 @@ export default function AssignItems() {
             <li key={item.id}>
               {item.name} - ${item.price} <br></br>
               <input type="checkbox" name="all"></input>
-              <label htmlFor="all">All </label>            
+              <label htmlFor="all">All </label>
               {payers.map((payer) => (
                 <span key={payer.id}>
                   <input
@@ -68,7 +92,7 @@ export default function AssignItems() {
         {payers.map((payer) => (
           <li key={payer.id}>
             {payer.name + " "}
-            Total:
+            Total: {calculateTotal(payer.id)}
           </li>
         ))}
       </div>
