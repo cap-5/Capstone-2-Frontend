@@ -70,10 +70,6 @@ const NavBar = ({ user, onLogout }) => {
                   >
                     Dashboard
                   </Button>
-
-                  <Typography variant="body1" sx={{ color: "text.secondary" }}>
-                    Welcome, {user.username}!
-                  </Typography>
                 </Box>
 
                 <Button
