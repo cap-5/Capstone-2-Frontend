@@ -154,19 +154,41 @@ export default function AssignItems() {
   }
 
   useEffect(() => {
-    async function fetchData() {
-      const groupResponse = await axios.get(
-        "localhost:8080/api/group/1/members"
-      );
-      const members = groupResponse.data;
-      console.log("FETCHED GROUP MEMBERS: ", members);
-      const receiptResponse = await axios.get(
-        "localhost:8080/api/receipts/3/items"
-      );
-      const items = receiptResponse.data;
-      console.log("FETCHED ITEMS: ", items);
-    }
-    fetchData();
+      async function fetchMembers() {
+        const groupResponse = await axios.get(
+          "http://localhost:8080/api/group/1/members"
+        );
+        const members = groupResponse.data;
+        const trimmedMembers = members.map(({ id, firstName }) => ({
+          id,
+          name: firstName,
+          total: 0,
+        }));
+        console.log("FETCHED GROUP MEMBERS: ", members);
+        console.log("TRIMMED: ", trimmedMembers);
+        setPayers(trimmedMembers);
+      }
+
+      async function fetchItems() {
+        const receiptResponse = await axios.get(
+          "http://localhost:8080/api/receipts/3/items"
+        );
+        const items = receiptResponse.data;
+        console.log("FETCHED ITEMS: ", items);
+
+        const trimmed = items.map(({ id, name, price }) => ({
+          id,
+          name,
+          price,
+        }));
+        console.log("TRIMMED ITEMS: ", trimmed);
+        setItems(trimmed);
+      }
+
+    fetchItems();
+    fetchMembers();
+    
+    
   }, []);
 
   return (
