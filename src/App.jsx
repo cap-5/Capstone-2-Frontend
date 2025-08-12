@@ -15,7 +15,8 @@ import DisplayUserInfo from "./components/DisplayUserInfo";
 import CreateGroup from "./components/CreateGroup";
 import ImageRender from "./components/ImageRender";
 import Dashboard from "./components/Dashboard";
-import AssignItems  from "./components/AssignItems";
+import AssignItems from "./components/AssignItems";
+import Toolbar from "@mui/material/Toolbar";
 
 const socket = io(SOCKETS_URL, {
   withCredentials: NODE_ENV === "production",
@@ -63,28 +64,28 @@ const App = () => {
     }
   };
 
-return (
-  <div>
-    <NavBar user={user} onLogout={handleLogout} />
-    <div className="app">
-      <Routes>
-        <Route path="/login" element={<Login setUser={setUser} />} />
-        <Route path="/signup" element={<Signup setUser={setUser} />} />
-        <Route path="/" element={<Home />} />
-        <Route path="*" element={<NotFound />} />
-        <Route path="/upload/:groupId" element={<ImageRender />} />
-        <Route path="/user-search" element={<UserSearch />} />
-        <Route path="/create-group" element={<CreateGroup />} />
-        <Route path="/assign" element={<AssignItems />} />
-         {/* nested navbar layout */}
-        <Route path="/dashboard" element={<Dashboard />}>
-          <Route path="profile" element={<DisplayUserInfo />} />
-        </Route>
-
-      </Routes>
+  return (
+    <div>
+      <NavBar user={user} onLogout={handleLogout} />
+      <Toolbar />
+      <div className="app">
+        <Routes>
+          <Route path="/login" element={<Login setUser={setUser} />} />
+          <Route path="/signup" element={<Signup setUser={setUser} />} />
+          <Route path="/" element={<Home />} />
+          <Route path="*" element={<NotFound />} />
+          <Route path="/upload/:groupId" element={<ImageRender />} />
+          <Route path="/user-search" element={<UserSearch />} />
+          <Route path="/create-group" element={<CreateGroup />} />
+          <Route path="/assign" element={<AssignItems />} />
+          {/* nested navbar layout */}
+          <Route path="/dashboard" element={<Dashboard />}>
+            <Route path="profile" element={<DisplayUserInfo />} />
+          </Route>
+        </Routes>
+      </div>
     </div>
-  </div>
-);
+  );
 };
 
 const Root = () => {
