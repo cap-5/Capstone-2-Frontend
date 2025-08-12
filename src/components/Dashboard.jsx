@@ -52,6 +52,9 @@ const Dashboard = () => {
             <ListItem button component={Link} to="profile">
               <ListItemText primary="Profile" sx={{ color: "white" }} />
             </ListItem>
+            <ListItem button component={Link} to="notifications">
+              <ListItemText primary="Group Invites" sx={{ color: "white" }} />
+            </ListItem>
             {/* Add more items */}
           </List>
         </Box>

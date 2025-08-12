@@ -17,6 +17,7 @@ import ImageRender from "./components/ImageRender";
 import Dashboard from "./components/Dashboard";
 import AssignItems from "./components/AssignItems";
 import Toolbar from "@mui/material/Toolbar";
+import MyNotification from "./components/MyNotifications";
 
 const socket = io(SOCKETS_URL, {
   withCredentials: NODE_ENV === "production",
@@ -81,6 +82,7 @@ const App = () => {
           {/* nested navbar layout */}
           <Route path="/dashboard" element={<Dashboard />}>
             <Route path="profile" element={<DisplayUserInfo />} />
+            <Route path="notifications" element={<MyNotification />} />
           </Route>
         </Routes>
       </div>
