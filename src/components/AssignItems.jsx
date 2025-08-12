@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 
 const dummyReceipt = [
   { id: 1, name: "Apples", price: 6.0 },
@@ -23,20 +24,11 @@ export default function AssignItems() {
 
   console.log("ASSIGNMENTS: ", assignments);
 
-  function handleAssignItem(e, item, payer) {
-    // setAssignments(prev => {
-    //   if(e.target.checked) {
-    //     const itemExists = prev.some(a => a.itemId === item && a.peyerId === payer)
-    //     return itemExists ? prev : [...prev, {item, price, payer}]
-    //   } else {
-    //     return prev.filter(a => !(a.itemId === item && a.payerId === payer))
-    //   }
-    // })
-    
+  function handleAssignItem(e, item, price, payer) {
     if (e.target.checked) {
       setAssignments([
         ...assignments,
-        { itemId: item, payerId: payer },
+        { itemId: item, itemPrice: price, payerId: payer },
       ]);
     } else {
       console.log("UNCHECKED ITEM ID: ", item);
@@ -44,8 +36,7 @@ export default function AssignItems() {
       setAssignments(
         assignments.filter(
           (assignment) =>
-            assignment.payerId !== payer &&
-            assignment.itemId !== item 
+            assignment.payerId !== payer || assignment.itemId !== item
         )
       );
     }
@@ -56,7 +47,7 @@ export default function AssignItems() {
     Reformats assignment object to look like this:
     { itemID: x, itemPrice: y, payers: [] }
     */
-    
+
     console.log("ASSIGNMENTS FROM GROUPASSIGNMENTS: ", assignments);
     const byItem = new Map(); // preserves first-seen order
 
@@ -78,12 +69,9 @@ export default function AssignItems() {
           entry.payers.push(p);
         }
       }
-
-      // optional: decide which price wins if they differ
-      // entry.itemPrice = entry.itemPrice ?? itemPrice;
-      console.log(payerList)
+      console.log(payerList);
     }
-    
+
     console.log("FROM GROUPASSIGNMENTS: ", [...byItem.values()]);
     return [...byItem.values()];
   }
@@ -102,10 +90,13 @@ export default function AssignItems() {
      */
     console.log("ASSIGNMENTS FROM CALCTOTAL: ", assignments);
     let newPayers = [...payers]; // make a copy of payers to store updated payer objects
+    for (const payer of newPayers) {
+      payer.total = 0;
+    }
     console.log("COPY OF PAYERS FROM CALC TOTAL: ", newPayers);
     for (let i = 0; i < assignments.length; i++) {
-      console.log("CALCULATING PRICE OF ITEM #:", assignments[i].itemId)
-      
+      console.log("CALCULATING PRICE OF ITEM #:", assignments[i].itemId);
+
       const thisItemPayers = assignments[i].payers;
       const thisItemNumPayers = assignments[i].payers.length;
       console.log("NUM PAYERS: ", thisItemNumPayers);
@@ -116,13 +107,13 @@ export default function AssignItems() {
         const thisPayerId = thisItemPayers[j];
         console.log("UPDATING TOTAL OF PAYER ID: ", thisPayerId);
 
-        const thisPayer = newPayers.find(payer => payer.id === thisPayerId)
+        const thisPayer = newPayers.find((payer) => payer.id === thisPayerId);
         const oldTotal = thisPayer.total;
         console.log("OLD PAYER OBJECT: ", thisPayer);
 
         thisPayer.total = oldTotal + thisItemSplitPrice;
         console.log("UPDATED PAYER OBJECT: ", thisPayer);
-        
+
         // let newPayers = payers.filter(payer => payer.id !== thisPayerId) // filter out the old payer object
         // newPayers.push(updatePayer); // and add the new one
       }
@@ -162,6 +153,22 @@ export default function AssignItems() {
     //   }
   }
 
+  useEffect(() => {
+    async function fetchData() {
+      const groupResponse = await axios.get(
+        "localhost:8080/api/group/1/members"
+      );
+      const members = groupResponse.data;
+      console.log("FETCHED GROUP MEMBERS: ", members);
+      const receiptResponse = await axios.get(
+        "localhost:8080/api/receipts/3/items"
+      );
+      const items = receiptResponse.data;
+      console.log("FETCHED ITEMS: ", items);
+    }
+    fetchData();
+  }, []);
+
   return (
     <div>
       <h1>Assign Items</h1>
@@ -180,7 +187,7 @@ export default function AssignItems() {
                     type="checkbox"
                     name={payer.name}
                     onChange={(e) =>
-                      handleAssignItem(e, item.id, payer.id)
+                      handleAssignItem(e, item.id, item.price, payer.id)
                     }
                   ></input>
                   <label htmlFor={payer.name}>{payer.name + " "}</label>
