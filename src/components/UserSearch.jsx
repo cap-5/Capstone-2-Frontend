@@ -89,7 +89,7 @@ const UserSearch = () => {
           withCredentials: true,
         }
       );
-
+      console.log("Invite response:", res.data);
       alert("Invite sent successfully!");
     } catch (error) {
       console.error("Invite failed:", error);
@@ -170,7 +170,7 @@ const UserSearch = () => {
             </List>
           </Paper>
         )}
-      </div>
+      </Box>
 
        {/* Group Selection Dropdown */}
       <div style={{ marginBottom: "10px" }}>
@@ -214,8 +214,9 @@ const UserSearch = () => {
       </ul>
       
       {/* Pagination Controls */}
-      <div style={{ marginTop: "15px", display: "flex", alignItems: "center" }}>
-        <button
+      <Box sx={{ display: "flex", alignItems: "center", gap: 2, mt: 2 }}>
+        <Button
+          variant="outlined"
           onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
           disabled={currentPage === 1}
         >

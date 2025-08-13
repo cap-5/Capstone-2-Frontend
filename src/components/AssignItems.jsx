@@ -47,11 +47,11 @@ export default function AssignItems() {
   }
 
   // Assign the passed item to all payers
-  function handleAssignAll() {
-    if (e.target.checked) {
-      setAssignments()
-    }
-  }
+  // function handleAssignAll() {
+  //   if (e.target.checked) {
+  //     setAssignments()
+  //   }
+  // }
 
   // Reformat assignment state for easier calculation
   function groupAssignments(assignments) {
@@ -213,7 +213,9 @@ export default function AssignItems() {
           {items.map((item) => (
             <li key={item.id}>
               {item.name} - ${item.price} <br></br>
-              <input type="checkbox" name="all" onChange={(e) => handleAssignAll(e, item.id)}></input>
+              <input type="checkbox" name="all" 
+              // onChange={(e) => handleAssignAll(e, item.id)}
+              ></input>
               <label htmlFor="all">All </label>
               {payers.map((payer) => (
                 <span key={payer.id}>
