@@ -1,17 +1,35 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { API_URL } from "../shared";
-import "./UserSearch.css";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
+import {
+  Box,
+  TextField,
+  Button,
+  List,
+  ListItem,
+  ListItemText,
+  CircularProgress,
+  Typography,
+  Paper,
+  InputAdornment,
+} from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
 
 const UserSearch = () => {
-  const [users, setUsers] = useState([]); // Displays all users
-  const [search, setSearch] = useState(""); // Search input
-  const [loading, setLoading] = useState(false); // Loading
-  const [suggestions, setSuggestions] = useState([]); // Autocomplete results for search input
-  const [currentPage, setCurrentPage] = useState(1); // Tracks current page number
-  const [totalPages, setTotalPages] = useState(1); // Tracks total number of pages available from backend 
+  const [users, setUsers] = useState([]);
+  const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [suggestions, setSuggestions] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [invitedUserIds, setInvitedUserIds] = useState([]);
 
-  // Fetches users from the backened with pagination search 
+  //CHANGE THIS LATER
+  const groupId = 4;
+
   const fetchUsers = async () => {
     try {
       setLoading(true);
@@ -19,49 +37,73 @@ const UserSearch = () => {
         params: {
           page: currentPage,
           limit: 10,
-          search: search, 
+          search: search,
         },
         withCredentials: true,
       });
       setUsers(response.data.users || []);
-      setTotalPages(response.data.totalPages || 1 );
+      setTotalPages(response.data.totalPages || 1);
     } catch (error) {
       console.error("Failed to fetch users:", error);
+      toast.error("Failed to fetch users.");
     } finally {
       setLoading(false);
     }
   };
 
-  // Fetches username suggestions for autocomplete
   const fetchSuggestions = async (searchTerm) => {
     try {
-      const response = await axios.get(`${API_URL}/api/users/search?query=${searchTerm}`); 
-      setSuggestions(response.data || []); 
+      const response = await axios.get(
+        `${API_URL}/api/users/search?query=${searchTerm}`
+      );
+      setSuggestions(response.data || []);
     } catch (error) {
       console.error("Error fetching suggestions:", error);
     }
   };
 
-  // Fetch on initial load
   useEffect(() => {
-    fetchUsers(); // Loads users immediately 
+    fetchUsers();
   }, [currentPage]);
 
-  // This calls "fetchUsers" when user types and presses "Search"
   const handleSearch = () => {
-    setCurrentPage(1); // Reset to page 1 when searching
-    fetchUsers(); // Fetches data
-    setSuggestions([]); 
+    setCurrentPage(1);
+    fetchUsers();
+    setSuggestions([]);
+  };
+
+  const handleInvite = async (receiverId) => {
+    try {
+      await axios.post(
+        `${API_URL}/api/group/invite`,
+        {
+          receiverId,
+          GroupId: groupId,
+        },
+        { withCredentials: true }
+      );
+
+      toast.success("Invite sent successfully!");
+      setInvitedUserIds((prev) => [...prev, receiverId]);
+    } catch (error) {
+      console.error(
+        "Failed to send invite:",
+        error.response?.data || error.message
+      );
+      toast.error(`${error.response?.data?.error || "Failed to send invite."}`);
+    }
   };
 
   return (
-    <div style={{ padding: "20px", position: "relative", maxWidth: "400px" }}>
-      <h2>All Users</h2>
+    <Box sx={{ p: 3, maxWidth: 480, mx: "auto", position: "relative" }}>
+      <Typography variant="h4" gutterBottom>
+        All Users
+      </Typography>
 
-      {/* Search Input */}
-      <div style={{ marginBottom: "10px" }}>
-        <input
-          type="text"
+      {/* Search input with button */}
+      <Box sx={{ display: "flex", gap: 1, mb: 2, position: "relative" }}>
+        <TextField
+          fullWidth
           placeholder="Search by username..."
           value={search}
           onChange={(e) => {
@@ -73,87 +115,133 @@ const UserSearch = () => {
               setSuggestions([]);
             }
           }}
-          style={{ padding: "8px", width: "250px" }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              handleSearch();
+            }
+          }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon />
+              </InputAdornment>
+            ),
+          }}
         />
-        <button onClick={handleSearch} style={{ marginLeft: "10px", padding: "8px 12px" }}>
+        <Button variant="contained" onClick={handleSearch}>
           Search
-        </button>
+        </Button>
 
-        {/* Autocomplete Suggestions */}
+        {/* Suggestions dropdown */}
         {suggestions.length > 0 && (
-          <ul style={{
-            border: "1px solid #ccc",
-            maxHeight: "150px",
-            overflowY: "auto",
-            width: "250px",
-            backgroundColor: "white",
-            position: "absolute",
-            zIndex: 10,
-            marginTop: "5px",
-            padding: 0,
-            listStyle: "none"
-          }}>
-            {suggestions.map((s) => (
-              <li
-                key={s.id}
-                style={{
-                  padding: "8px",
-                  cursor: "pointer",
-                  borderBottom: "1px solid #eee"
-                }}
-                onClick={() => {
-                  setSearch(s.username);
-                  setSuggestions([]);
-                  fetchUsers();
-                }}
-              >
-                {s.username}
-              </li>
-            ))}
-          </ul>
+          <Paper
+            elevation={3}
+            sx={{
+              position: "absolute",
+              top: "56px",
+              left: 0,
+              right: 100, // leave space for button
+              maxHeight: 200,
+              overflowY: "auto",
+              zIndex: 20,
+            }}
+          >
+            <List dense>
+              {suggestions.map((s) => (
+                <ListItem
+                  button
+                  key={s.id}
+                  onClick={() => {
+                    setSearch(s.username);
+                    setSuggestions([]);
+                    fetchUsers();
+                  }}
+                >
+                  <ListItemText primary={s.username} />
+                </ListItem>
+              ))}
+            </List>
+          </Paper>
         )}
-      </div>
+      </Box>
 
       {/* Loading */}
-      {loading && <p>Loading users...</p>}
+      {loading && (
+        <Box sx={{ display: "flex", justifyContent: "center", my: 3 }}>
+          <CircularProgress />
+        </Box>
+      )}
 
-      {/* User List */}
-      <ul>
-        {users.length > 0 ? (
-          users.map((u) => (
-            <li key={u.id}>
-              <strong style={{ marginRight: "10px" }}>{u.username}</strong> 
-              <button style={{ padding: "5px 20px" }}>Invite</button>
-            </li>
-          ))
-        ) : (
-          <p>No users found.</p>
-        )}
-      </ul>
-      
-      {/* Pagination Controls */}
-      <div style={{ marginTop: "15px", display: "flex", alignItems: "center" }}>
-        <button
+      {/* User list */}
+      <List>
+        {users.length > 0
+          ? users.map((u) => (
+              <ListItem
+                key={u.id}
+                secondaryAction={
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={() => handleInvite(u.id)}
+                    disabled={invitedUserIds.includes(u.id)}
+                  >
+                    {invitedUserIds.includes(u.id) ? "Invited" : "Invite"}
+                  </Button>
+                }
+              >
+                <ListItemText primary={u.username} />
+              </ListItem>
+            ))
+          : !loading && (
+              <Typography variant="body1" sx={{ mt: 2 }}>
+                No users found.
+              </Typography>
+            )}
+      </List>
+
+      {/* Pagination controls */}
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          gap: 2,
+          mt: 3,
+          alignItems: "center",
+        }}
+      >
+        <Button
+          variant="outlined"
           onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
           disabled={currentPage === 1}
-          style={{ padding: "5px 10px" }}
         >
           Previous
-        </button>
-
-        <span style={{ margin: "0 10px" }}>
+        </Button>
+        <Typography>
           Page {currentPage} of {totalPages}
-        </span>
-
-        <button
-          onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+        </Typography>
+        <Button
+          variant="outlined"
+          onClick={() =>
+            setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+          }
           disabled={currentPage === totalPages}
-          style={{ padding: "5px 10px" }}
         >
           Next
-        </button>
-      </div>
-    </div>
+        </Button>
+      </Box>
+
+      {/* Toast notifications */}
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
+    </Box>
   );
 };
 
