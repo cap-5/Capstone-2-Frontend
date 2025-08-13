@@ -46,6 +46,9 @@ const NavBar = ({ user, onLogout }) => {
                 OCR Tool
               </Button>
               <Button component={RouterLink} to="/Group" color="inherit">
+                My Groups
+              </Button>
+              <Button component={RouterLink} to="/user-search" color="inherit">
                 User Search
               </Button>
               <Button component={RouterLink} to="/create-group" color="inherit">

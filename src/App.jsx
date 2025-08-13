@@ -17,6 +17,7 @@ import CreateGroup from "./components/CreateGroup";
 import ImageRender from "./components/ImageRender";
 import Dashboard from "./components/Dashboard";
 import AssignItems  from "./components/AssignItems";
+import UserSearch from "./components/UserSearch";
 
 const socket = io(SOCKETS_URL, {
   withCredentials: NODE_ENV === "production",
@@ -77,6 +78,7 @@ return (
         <Route path="/Group" element={<Group />} />
         <Route path="/groups/:id" element={<GroupDetail />} />
         <Route path="/create-group" element={<CreateGroup />} />
+        <Route path="/user-search" element={<UserSearch />} />
         <Route path="/assign" element={<AssignItems />} />
          {/* nested navbar layout */}
         <Route path="/dashboard" element={<Dashboard />}>
