@@ -78,7 +78,7 @@ const App = () => {
           <Route path="/upload/:groupId" element={<ImageRender />} />
           <Route path="/user-search" element={<UserSearch />} />
           <Route path="/create-group" element={<CreateGroup />} />
-          <Route path="/assign" element={<AssignItems />} />
+          <Route path="/assign/:groupId/:receiptId" element={<AssignItems />} />
           {/* nested navbar layout */}
           <Route path="/dashboard" element={<Dashboard />}>
             <Route path="profile" element={<DisplayUserInfo />} />

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import {useParams} from "react-router-dom"
 import axios from "axios";
 
 const dummyReceipt = [
@@ -14,6 +15,8 @@ const dummyGroup = [
 ];
 
 export default function AssignItems() {
+  const { groupId, receiptId } = useParams();
+
   const [items, setItems] = useState(dummyReceipt);
   const [payers, setPayers] = useState(dummyGroup);
   /* 
@@ -24,6 +27,7 @@ export default function AssignItems() {
 
   console.log("ASSIGNMENTS: ", assignments);
 
+  // Assign the passed item to the selected payer
   function handleAssignItem(e, item, price, payer) {
     if (e.target.checked) {
       setAssignments([
@@ -42,6 +46,14 @@ export default function AssignItems() {
     }
   }
 
+  // Assign the passed item to all payers
+  function handleAssignAll() {
+    if (e.target.checked) {
+      setAssignments()
+    }
+  }
+
+  // Reformat assignment state for easier calculation
   function groupAssignments(assignments) {
     /* 
     Reformats assignment object to look like this:
@@ -156,12 +168,12 @@ export default function AssignItems() {
   useEffect(() => {
       async function fetchMembers() {
         const groupResponse = await axios.get(
-          "http://localhost:8080/api/group/1/members"
+          `http://localhost:8080/api/group/${groupId}/members`
         );
         const members = groupResponse.data;
-        const trimmedMembers = members.map(({ id, firstName }) => ({
+        const trimmedMembers = members.map(({ id, firstName, lastName }) => ({
           id,
-          name: firstName,
+          name: firstName + " " + lastName,
           total: 0,
         }));
         console.log("FETCHED GROUP MEMBERS: ", members);
@@ -171,18 +183,18 @@ export default function AssignItems() {
 
       async function fetchItems() {
         const receiptResponse = await axios.get(
-          "http://localhost:8080/api/receipts/3/items"
+          `http://localhost:8080/api/receipts/${receiptId}/items`
         );
         const items = receiptResponse.data;
         console.log("FETCHED ITEMS: ", items);
 
-        const trimmed = items.map(({ id, name, price }) => ({
+        const trimmedItems = items.map(({ id, name, price }) => ({
           id,
           name,
           price,
         }));
-        console.log("TRIMMED ITEMS: ", trimmed);
-        setItems(trimmed);
+        console.log("TRIMMED ITEMS: ", trimmedItems);
+        setItems(trimmedItems);
       }
 
     fetchItems();
@@ -201,7 +213,7 @@ export default function AssignItems() {
           {items.map((item) => (
             <li key={item.id}>
               {item.name} - ${item.price} <br></br>
-              <input type="checkbox" name="all"></input>
+              <input type="checkbox" name="all" onChange={(e) => handleAssignAll(e, item.id)}></input>
               <label htmlFor="all">All </label>
               {payers.map((payer) => (
                 <span key={payer.id}>
