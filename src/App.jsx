@@ -17,7 +17,6 @@ import DisplayUserReceipts from "./components/UserReceipts";
 import GroupRecipts from "./components/GroupRecipts";
 import UpadteUserInfo from "./components/UpdateUserInfo";
 
-
 const socket = io(SOCKETS_URL, {
   withCredentials: NODE_ENV === "production",
 });
@@ -81,7 +80,7 @@ const App = () => {
           <Route path="createAGroup" element={<CreateGroup />} />
           <Route path="UsersReceipts" element={<DisplayUserReceipts />} />
           <Route path="groupReceipts" element={<GroupRecipts />} />
-          <Route path = "UserReceipts" element={<UpadteUserInfo />} />
+          <Route path="UpadteUserInfo" element={<UpadteUserInfo />} />
         </Routes>
       </div>
     </div>
