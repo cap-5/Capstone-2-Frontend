@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { API_URL } from "../shared";
-import "./UserSearch.css";
 
 const UserSearch = () => {
   const [users, setUsers] = useState([]); // Displays all users

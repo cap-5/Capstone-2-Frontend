@@ -1,15 +1,33 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { createWorker } from "tesseract.js";
 import axios from "axios";
-import { useParams } from "react-router-dom";
+import EditItems from "./EditItems";
+import { API_URL } from "../shared";
+
+// MUI imports for UI components and styling
+import {
+  Box,
+  Button, // Styled clickable button component
+  Typography, // Text component with predefined variants (headings, subtitles)
+  TextField, // Input field or textarea with styling
+  MenuItem, // Individual selectable item inside Select dropdown
+  Select, // Styled dropdown select component
+  InputLabel, // Label for Select input
+  FormControl, // Wrapper for form controls to handle label/input layout/accessibility
+} from "@mui/material";
 
 function OcrComponent() {
   const [ocrResult, setOcrResult] = useState("");
+  const [editedBody, setEditedBody] = useState(""); // Editable OCR text
   const [imageFile, setImageFile] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [receiptItems, setReceiptItems] = useState([]);
   const [category, setCategory] = useState("");
   const [customCategory, setCustomCategory] = useState("");
   const [isOther, setIsOther] = useState(false);
+  const [backendTotal, setBackendTotal] = useState(null);
+
+  const groupId = 1; // Hardcoded for now
 
   const predefinedCategories = [
     "Entertainment",
@@ -21,43 +39,33 @@ function OcrComponent() {
     "Other",
   ];
 
-  const { groupId } = useParams();
-
   useEffect(() => {
+    if (!imageFile) return;
+
     const doOcr = async () => {
-      if (imageFile) {
-        const worker = await createWorker("eng", 1, {
-          logger: (m) => console.log(m),
-        });
-        const {
-          data: { text },
-        } = await worker.recognize(imageFile);
-        setOcrResult(text);
-        await worker.terminate();
-      }
+      // Create a new OCR worker with English language support
+      const worker = await createWorker("eng", 1);
+
+      // Run OCR on the uploaded image file to extract text
+      const {
+        data: { text },
+      } = await worker.recognize(imageFile);
+      setOcrResult(text);
+      setEditedBody(text); // Initialize editable text with OCR output
+      await worker.terminate();
     };
 
     doOcr();
   }, [imageFile]);
 
-  const handleImageUpload = (e) => {
-    if (e.target.files[0]) {
-      setImageFile(e.target.files[0]);
-      setOcrResult("Recognizing...");
-    }
-  };
-
   const parseItemsFromText = (text) => {
     const lines = text.split("\n");
-    const items = [];
-
     const skipWords = [
       "total",
       "subtotal",
-      "tax",
-      "swbtotel",
-      "swbtota",
       "swbtote",
+      "Swtotal",
+      "tax",
       "cash",
       "tender",
       "change",
@@ -68,89 +76,67 @@ function OcrComponent() {
       "credit",
     ];
 
-    for (const line of lines) {
+    return lines.reduce((acc, line) => {
+      // Matches lines that end with a price formatted as digits + decimal + two digits (e.g. "15.00")
       const match = line.match(/(.+?)\s+(\d+\.\d{2})$/);
-      if (match) {
-        let name = match[1].trim();
-        const price = parseFloat(match[2]);
 
-        const normalized = name.toLowerCase().replace(/[^a-z]/g, "");
-        if (skipWords.some((word) => normalized.includes(word))) continue;
+      // If line doesn't match the pattern, skip it and continue
+      if (!match) return acc;
 
-        const quantityMatch = name.match(/^\d+\s+(.+)/);
-        if (quantityMatch) {
-          name = quantityMatch[1];
-        }
+      let name = match[1].trim();
+      const price = parseFloat(match[2]);
 
-        // classify item type
-        let type = "product";
-        if (/cash|payment|visa|mastercard|credit|debit/i.test(name)) {
-          type = "payment";
-        } else if (/change|balance/i.test(name)) {
-          type = "change";
-        }
+      // Ignore lines containing keywords like "total", "tax" etc.
+      if (skipWords.some((word) => new RegExp(`\\b${word}\\b`, "i").test(name)))
+        return acc;
 
-        items.push({ name, price, type });
-      }
-    }
+      // Remove quantity number from item name, e.g. "2 apples" becomes "apples"
+      const quantityMatch = name.match(/^\d+\s+(.+)/);
+      if (quantityMatch) name = quantityMatch[1];
 
-    return items;
+      acc.push({ name, price });
+      return acc;
+    }, []);
   };
 
-  const parsedItems = useMemo(() => parseItemsFromText(ocrResult), [ocrResult]);
+  // Uses useMemo to only parse the receipt text when the user edits the text
+  const parsedItems = useMemo(
+    () => parseItemsFromText(editedBody),
+    [editedBody]
+  );
 
-  const sendToBackend = async () => {
-    if (!parsedItems.length) {
-      alert("No valid items found in receipt.");
-      return;
-    }
+  useEffect(() => {
+    // Get the current highest key in receiptItems, or -1 if empty
+    const maxKey = receiptItems.length
+      ? Math.max(...receiptItems.map((i) => i.key))
+      : -1;
 
-    const finalCategory = isOther ? customCategory : category;
+    // Create a new array 'enriched' by adding unique keys to each parsed item
+    const enriched = parsedItems.map((item, idx) => ({
+      ...item,
+      key: maxKey + 1 + idx, // Assign unique key by incrementing from maxKey
+    }));
 
-    if (!finalCategory) {
-      alert("Please select or enter a category.");
-      return;
-    }
+    // Update receiptItems state with the enriched array containing keys
+    setReceiptItems(enriched);
+  }, [parsedItems]);
 
-    const receiptPayload = {
-      receipt: {
-        title: "Scanned Receipt",
-        body: ocrResult,
-        category: finalCategory,
-      },
-      items: parsedItems,
-    };
-
-    try {
-      setIsSaving(true);
-
-      const res = await axios.post(
-        `http://localhost:8080/api/receipts`,
-        receiptPayload,
-        { withCredentials: true }
-      );
-
-      alert("Receipt saved successfully!");
-      console.log(res.data);
-    } catch (err) {
-      console.error(
-        "Save error:",
-        err.response ? err.response.data : err.message
-      );
-      alert("Error saving receipt.");
-    } finally {
-      setIsSaving(false);
+ 
+  const handleImageUpload = (e) => {
+    if (e.target.files[0]) {
+      setImageFile(e.target.files[0]); // Save the uploaded file in state
+      setOcrResult("Recognizing..."); 
+      setBackendTotal(null); // Clear any previous total value
     }
   };
 
   const handleCategoryChange = (e) => {
-    const selected = e.target.value;
-    if (selected === "Other") {
+    if (e.target.value === "Other") {
       setIsOther(true);
       setCategory("");
     } else {
       setIsOther(false);
-      setCategory(selected);
+      setCategory(e.target.value);
     }
   };
 
@@ -159,80 +145,142 @@ function OcrComponent() {
     setCategory(e.target.value);
   };
 
+  const sendToBackend = async () => {
+    if (!receiptItems.length) {
+      alert("No items to save.");
+      return;
+    }
+
+    // if other true then custom
+    const finalCategory = isOther ? customCategory : category;
+    if (!finalCategory) {
+      alert("Please select or enter a category.");
+      return;
+    }
+
+    try {
+      setIsSaving(true);
+
+      const res = await axios.post(
+        `${API_URL}/api/receipts/${groupId}/Upload`,
+        {
+          receipt: {
+            title: "Scanned Receipt",
+            body: editedBody,
+            category: finalCategory,
+            Group_Id: groupId,
+          },
+          items: receiptItems,
+        },
+        { withCredentials: true }
+      );
+
+      alert("Receipt saved!");
+
+      // Get totalPay directly from saved receipt response
+      const savedReceipt = res.data.receipt;
+      setBackendTotal(savedReceipt.totalPay);
+    } catch (err) {
+      console.error(err);
+      alert("Error saving receipt.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   return (
-    <div style={{ padding: "1rem", maxWidth: "600px", margin: "auto" }}>
-      <h2>Receipt OCR Uploader</h2>
+    <Box
+      sx={{
+        maxWidth: 600,
+        mx: "auto",
+        p: 3,
+        borderRadius: 2,
+        boxShadow: 3,
+        bgcolor: "background.paper",
+      }}
+    >
+      <Typography variant="h4" mb={3} align="center">
+        Receipt OCR Uploader
+      </Typography>
 
-      <input type="file" accept="image/*" onChange={handleImageUpload} />
-      <br />
-      <br />
+      <Button variant="contained" component="label" fullWidth>
+        Upload Image
+        <input
+          type="file"
+          accept="image/*"
+          hidden
+          onChange={handleImageUpload}
+        />
+      </Button>
 
-      <p>
-        <strong>OCR Result:</strong>
-      </p>
-      <pre
-        style={{
-          background: "#f4f4f4",
-          padding: "1rem",
-          whiteSpace: "pre-wrap",
-        }}
-      >
-        {ocrResult}
-      </pre>
+      <Typography variant="subtitle1" mt={3} mb={1}>
+        OCR Result (editable):
+      </Typography>
 
-      <h4>Parsed Items:</h4>
-      {parsedItems.length > 0 ? (
-        <ul>
-          {parsedItems.map((item, i) => (
-            <li key={i}>
-              {item.name} - ${item.price.toFixed(2)}
-            </li> //beef solution
+      <TextField
+        multiline // Makes this TextField behave like a textarea (multi-line input)
+        minRows={6}
+        fullWidth
+        variant="outlined" // Gives the input a visible border outline (MUI style)
+        value={editedBody} // Controlled component: the displayed text is from the React state 'editedBody'
+        onChange={(e) => setEditedBody(e.target.value)}
+        /* onChange handler updates 'editedBody' state as user types,
+     making this TextField editable by syncing the input's value with state */
+      />
+      <FormControl fullWidth sx={{ mt: 3 }}>
+        <InputLabel id="category-label">Category</InputLabel>
+
+        <Select
+          labelId="category-label"
+          value={isOther ? "Other" : category}
+          label="Category"
+          onChange={handleCategoryChange}
+        >
+          <MenuItem value="" disabled>
+            Select a category
+          </MenuItem>
+
+          {/* Map through predefined categories to create selectable options */}
+          {predefinedCategories.map((cat) => (
+            <MenuItem key={cat} value={cat}>
+              {cat}
+            </MenuItem>
           ))}
-        </ul>
-      ) : (
-        <p>No items detected.</p>
-      )}
-
-      <div style={{ margin: "1rem 0" }}>
-        <label>
-          Category:
-          <select
-            value={isOther ? "Other" : category}
-            onChange={handleCategoryChange}
-          >
-            <option value="" disabled>
-              Select a category
-            </option>
-            {predefinedCategories.map((cat) => (
-              <option key={cat} value={cat}>
-                {cat}
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
+        </Select>
+      </FormControl>
 
       {isOther && (
-        <div style={{ marginBottom: "1rem" }}>
-          <label>
-            Custom Category:
-            <input
-              type="text"
-              value={customCategory}
-              onChange={handleCustomCategoryChange}
-              placeholder="Enter your category"
-            />
-          </label>
-        </div>
+        <TextField
+          fullWidth
+          variant="outlined"
+          placeholder="Enter custom category"
+          value={customCategory}
+          onChange={handleCustomCategoryChange}
+          sx={{ mt: 2 }}
+        />
       )}
 
-      <button
+      <Box mt={3}>
+        <EditItems items={receiptItems} setItems={setReceiptItems} />
+      </Box>
+
+      {backendTotal !== null && (
+        <Typography variant="h6" mt={3}>
+          Total from backend: ${backendTotal.toFixed(2)}
+        </Typography>
+      )}
+
+      <Button
+        variant="contained"
+        color="primary"
+        fullWidth
+        sx={{ mt: 3 }}
         onClick={sendToBackend}
-        disabled={isSaving || !parsedItems.length}
+        disabled={isSaving || !receiptItems.length}
       >
         {isSaving ? "Saving..." : "Save to Database"}
-      </button>
-    </div>
+      </Button>
+    </Box>
   );
 }
 

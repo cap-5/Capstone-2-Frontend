@@ -10,15 +10,17 @@ import Home from "./components/Home";
 import NotFound from "./components/NotFound";
 import { API_URL, SOCKETS_URL, NODE_ENV } from "./shared";
 import { io } from "socket.io-client";
-import UserSearch from "./components/UserSearch";
 import Group from "./components/Group";
-
+import GroupDetail from "./components/GroupDetail";
+import DisplayUserInfo from "./components/DisplayUserInfo";
+import CreateGroup from "./components/CreateGroup";
+import ImageRender from "./components/ImageRender";
+import Dashboard from "./components/Dashboard";
+import AssignItems  from "./components/AssignItems";
 
 const socket = io(SOCKETS_URL, {
   withCredentials: NODE_ENV === "production",
 });
-
-import ImageRender from "./components/ImageRender";
 
 const App = () => {
   const [user, setUser] = useState(null);
@@ -62,23 +64,29 @@ const App = () => {
     }
   };
 
-  return (
-    <div>
-      <NavBar user={user} onLogout={handleLogout} />
-      <div className="app">
-        <Routes>
-          <Route path="/login" element={<Login setUser={setUser} />} />
-          <Route path="/signup" element={<Signup setUser={setUser} />} />
-          <Route exact path="/" element={<Home />} />
-          <Route path="*" element={<NotFound />} />
-          <Route path="/ocr" element={<ImageRender />} />
-          <Route path="/UserSearch" element={<UserSearch />} />
-          <Route path="/Group" element={<Group />} />
+return (
+  <div>
+    <NavBar user={user} onLogout={handleLogout} />
+    <div className="app">
+      <Routes>
+        <Route path="/login" element={<Login setUser={setUser} />} />
+        <Route path="/signup" element={<Signup setUser={setUser} />} />
+        <Route path="/" element={<Home />} />
+        <Route path="*" element={<NotFound />} />
+        <Route path="/upload/:groupId" element={<ImageRender />} />
+        <Route path="/Group" element={<Group />} />
+        <Route path="/groups/:id" element={<GroupDetail />} />
+        <Route path="/create-group" element={<CreateGroup />} />
+        <Route path="/assign" element={<AssignItems />} />
+         {/* nested navbar layout */}
+        <Route path="/dashboard" element={<Dashboard />}>
+          <Route path="profile" element={<DisplayUserInfo />} />
+        </Route>
 
-        </Routes>
-      </div>
+      </Routes>
     </div>
-  );
+  </div>
+);
 };
 
 const Root = () => {
