@@ -19,16 +19,16 @@ import {
 import SearchIcon from "@mui/icons-material/Search";
 
 const UserSearch = () => {
-  const [users, setUsers] = useState([]);
-  const [search, setSearch] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [suggestions, setSuggestions] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [invitedUserIds, setInvitedUserIds] = useState([]);
+  const [users, setUsers] = useState([]); // Displays all users
+  const [search, setSearch] = useState(""); // Search input
+  const [loading, setLoading] = useState(false); // Loading
+  const [suggestions, setSuggestions] = useState([]); // Autocomplete results for search input
+  const [currentPage, setCurrentPage] = useState(1); // Tracks current page number
+  const [totalPages, setTotalPages] = useState(1); // Tracks total number of pages available from backend 
+  const [selectedGroupId, setSelectedGroupId] = useState(""); // Invite
 
-  const groupId = 4;
 
+  // Fetches users from the backened with pagination search 
   const fetchUsers = async () => {
     try {
       setLoading(true);
@@ -61,6 +61,7 @@ const UserSearch = () => {
     }
   };
 
+  // Fetch on initial load 
   useEffect(() => {
     fetchUsers();
   }, [currentPage]);
@@ -72,24 +73,31 @@ const UserSearch = () => {
   };
 
   const handleInvite = async (receiverId) => {
+    if (!selectedGroupId) {
+      alert("Please select a group first.");
+      return;
+    }
+
     try {
-      await axios.post(
+      const res = await axios.post(
         `${API_URL}/api/group/invite`,
         {
           receiverId,
-          GroupId: groupId,
+          GroupId: selectedGroupId,
         },
-        { withCredentials: true }
+        {
+          withCredentials: true,
+        }
       );
 
-      toast.success("Invite sent successfully!");
-      setInvitedUserIds((prev) => [...prev, receiverId]);
+      alert("Invite sent successfully!");
     } catch (error) {
-      console.error(
-        "Failed to send invite:",
-        error.response?.data || error.message
-      );
-      toast.error(`${error.response?.data?.error || "Failed to send invite."}`);
+      console.error("Invite failed:", error);
+      if (error.response?.data?.error) {
+        alert(`Invite failed: ${error.response.data.error}`);
+      } else {
+        alert("Failed to send invite.");
+      }
     }
   };
 
@@ -162,7 +170,25 @@ const UserSearch = () => {
             </List>
           </Paper>
         )}
-      </Box>
+      </div>
+
+       {/* Group Selection Dropdown */}
+      <div style={{ marginBottom: "10px" }}>
+        <label htmlFor="group-select" style={{ marginRight: "10px" }}>
+          Select a group:
+        </label>
+        <select
+          id="group-select"
+          value={selectedGroupId}
+          onChange={(e) => setSelectedGroupId(e.target.value)}
+          style={{ padding: "6px" }}
+        >
+          <option value="">-- Choose Group --</option>
+          <option value="1">Group 1</option>
+          <option value="2">Group 2</option>
+          {/* Later, fetch your actual groups dynamically */}
+        </select>
+      </div>
 
       {/* Loading */}
       {loading && (
@@ -171,45 +197,25 @@ const UserSearch = () => {
         </Box>
       )}
 
-      {/* User list */}
-      <List>
-        {users.length > 0
-          ? users.map((u) => (
-              <ListItem
-                key={u.id}
-                secondaryAction={
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    onClick={() => handleInvite(u.id)}
-                    disabled={invitedUserIds.includes(u.id)}
-                  >
-                    {invitedUserIds.includes(u.id) ? "Invited" : "Invite"}
-                  </Button>
-                }
-              >
-                <ListItemText primary={u.username} />
-              </ListItem>
-            ))
-          : !loading && (
-              <Typography variant="body1" sx={{ mt: 2 }}>
-                No users found.
-              </Typography>
-            )}
-      </List>
-
-      {/* Pagination controls */}
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-          gap: 2,
-          mt: 3,
-          alignItems: "center",
-        }}
-      >
-        <Button
-          variant="outlined"
+      {/* User List */}
+      <ul>
+        {users.length > 0 ? (
+          users.map((u) => (
+            <li key={u.id}>
+              <strong style={{ marginRight: "10px" }}>{u.username}</strong> 
+              <button onClick={() => handleInvite(u.id)} style={{ padding: "5px 20px" }}>
+                Invite 
+              </button>
+            </li>
+          ))
+        ) : (
+          <p>No users found.</p>
+        )}
+      </ul>
+      
+      {/* Pagination Controls */}
+      <div style={{ marginTop: "15px", display: "flex", alignItems: "center" }}>
+        <button
           onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
           disabled={currentPage === 1}
         >
