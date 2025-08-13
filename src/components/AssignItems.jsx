@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {useParams} from "react-router-dom"
+import { useParams } from "react-router-dom";
 import axios from "axios";
 
 const dummyReceipt = [
@@ -21,7 +21,7 @@ export default function AssignItems() {
   const [payers, setPayers] = useState(dummyGroup);
   /* 
   Store item-payer assignments like this:
-    { itemId: x, payerId: [] }
+    { itemId: x, itemPrice: price, payerId: y }
   */
   const [assignments, setAssignments] = useState([]);
 
@@ -35,8 +35,6 @@ export default function AssignItems() {
         { itemId: item, itemPrice: price, payerId: payer },
       ]);
     } else {
-      console.log("UNCHECKED ITEM ID: ", item);
-      console.log("UNCHECKED PAYER ID: ", payer);
       setAssignments(
         assignments.filter(
           (assignment) =>
@@ -47,9 +45,33 @@ export default function AssignItems() {
   }
 
   // Assign the passed item to all payers
-  // function handleAssignAll() {
-  //   if (e.target.checked) {
-  //     setAssignments()
+  function handleAssignAll(e, item, price) {
+    if (e.target.checked) {
+      const newAssignments = payers.map((payer) => ({
+        itemId: item,
+        itemPrice: price,
+        payerId: payer.id,
+      }));
+      setAssignments(assignments.concat(newAssignments));
+    } else {
+      setAssignments(
+        assignments.filter((assignment) => assignment.itemId !== item)
+      );
+    }
+  }
+
+  // Check if the assignment exists in assignment state
+  // function isChecked(item, payer) {
+  //   let assignmentExists = false;
+  //   for (const assignment of assignments) {
+  //     if (assignment.itemId === item && assignment.payerId === payer)
+  //       assignmentExists = true;
+  //   }
+    
+  //   if (assignmentExists) {
+  //     return true
+  //   } else {
+  //     return false
   //   }
   // }
 
@@ -166,41 +188,39 @@ export default function AssignItems() {
   }
 
   useEffect(() => {
-      async function fetchMembers() {
-        const groupResponse = await axios.get(
-          `http://localhost:8080/api/group/${groupId}/members`
-        );
-        const members = groupResponse.data;
-        const trimmedMembers = members.map(({ id, firstName, lastName }) => ({
-          id,
-          name: firstName + " " + lastName,
-          total: 0,
-        }));
-        console.log("FETCHED GROUP MEMBERS: ", members);
-        console.log("TRIMMED: ", trimmedMembers);
-        setPayers(trimmedMembers);
-      }
+    async function fetchMembers() {
+      const groupResponse = await axios.get(
+        `http://localhost:8080/api/group/${groupId}/members`
+      );
+      const members = groupResponse.data;
+      const trimmedMembers = members.map(({ id, firstName, lastName }) => ({
+        id,
+        name: firstName + " " + lastName,
+        total: 0,
+      }));
+      console.log("FETCHED GROUP MEMBERS: ", members);
+      console.log("TRIMMED: ", trimmedMembers);
+      setPayers(trimmedMembers);
+    }
 
-      async function fetchItems() {
-        const receiptResponse = await axios.get(
-          `http://localhost:8080/api/receipts/${receiptId}/items`
-        );
-        const items = receiptResponse.data;
-        console.log("FETCHED ITEMS: ", items);
+    async function fetchItems() {
+      const receiptResponse = await axios.get(
+        `http://localhost:8080/api/receipts/${receiptId}/items`
+      );
+      const items = receiptResponse.data;
+      console.log("FETCHED ITEMS: ", items);
 
-        const trimmedItems = items.map(({ id, name, price }) => ({
-          id,
-          name,
-          price,
-        }));
-        console.log("TRIMMED ITEMS: ", trimmedItems);
-        setItems(trimmedItems);
-      }
+      const trimmedItems = items.map(({ id, name, price }) => ({
+        id,
+        name,
+        price,
+      }));
+      console.log("TRIMMED ITEMS: ", trimmedItems);
+      setItems(trimmedItems);
+    }
 
     fetchItems();
     fetchMembers();
-    
-    
   }, []);
 
   return (
@@ -213,8 +233,10 @@ export default function AssignItems() {
           {items.map((item) => (
             <li key={item.id}>
               {item.name} - ${item.price} <br></br>
-              <input type="checkbox" name="all" 
-              // onChange={(e) => handleAssignAll(e, item.id)}
+              <input
+                type="checkbox"
+                name="all"
+                onChange={(e) => handleAssignAll(e, item.id, item.price)}
               ></input>
               <label htmlFor="all">All </label>
               {payers.map((payer) => (
@@ -222,6 +244,7 @@ export default function AssignItems() {
                   <input
                     type="checkbox"
                     name={payer.name}
+                    // checked={}
                     onChange={(e) =>
                       handleAssignItem(e, item.id, item.price, payer.id)
                     }
