@@ -16,7 +16,6 @@ import CreateGroup from "./components/CreateGroup";
 import DisplayUserReceipts from "./components/UserReceipts";
 import GroupRecipts from "./components/GroupRecipts";
 import UpadteUserInfo from "./components/UpdateUserInfo";
-
 const socket = io(SOCKETS_URL, {
   withCredentials: NODE_ENV === "production",
 });
