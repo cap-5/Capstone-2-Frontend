@@ -11,6 +11,7 @@ import {
   Container,
   Box,
 } from "@mui/material";
+import { API_URL } from "../shared";
 
 const MyNotification = () => {
   const [loading, setLoading] = useState(false);
@@ -24,7 +25,7 @@ const MyNotification = () => {
       setLoading(true);
       setError(null);
       try {
-        const res = await axios.get("http://localhost:8080/api/group/invites", {
+        const res = await axios.get(`${API_URL}/api/group/invites`, {
           withCredentials: true,
         });
         setInvites(res.data || []);
@@ -43,7 +44,7 @@ const MyNotification = () => {
     setError(null);
     try {
       await axios.post(
-        `http://localhost:8080/api/group/invite/${inviteId}/accept`,
+        `${API_URL}/api/group/invite/${inviteId}/accept`,
         {},
         { withCredentials: true }
       );
@@ -61,7 +62,7 @@ const MyNotification = () => {
     setError(null);
     try {
       await axios.post(
-        `http://localhost:8080/api/group/invite/${inviteId}/decline`,
+        `${API_URL}/api/group/invite/${inviteId}/decline`,
         {},
         { withCredentials: true }
       );

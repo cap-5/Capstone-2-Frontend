@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { API_URL } from "../shared";
 const MakeGroup = () => {
   const [groupData, setGroupData] = useState({
     description: "",
@@ -9,7 +10,7 @@ const MakeGroup = () => {
   const fetchGroupData = async () => {
     try {
       const res = await axios.post(
-        "http://localhost:8080/api/group/create",
+        `${API_URL}/api/group/create`,
         groupData,
         {
           withCredentials: true,

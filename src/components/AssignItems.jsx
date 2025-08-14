@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import {useParams} from "react-router-dom"
 import axios from "axios";
+import { API_URL } from "../shared";
 
 const dummyReceipt = [
   { id: 1, name: "Apples", price: 6.0 },
@@ -168,7 +169,7 @@ export default function AssignItems() {
   useEffect(() => {
       async function fetchMembers() {
         const groupResponse = await axios.get(
-          `http://localhost:8080/api/group/${groupId}/members`
+          `${API_URL}/api/group/${groupId}/members`
         );
         const members = groupResponse.data;
         const trimmedMembers = members.map(({ id, firstName, lastName }) => ({
@@ -183,7 +184,7 @@ export default function AssignItems() {
 
       async function fetchItems() {
         const receiptResponse = await axios.get(
-          `http://localhost:8080/api/receipts/${receiptId}/items`
+          `${API_URL}/api/receipts/${receiptId}/items`
         );
         const items = receiptResponse.data;
         console.log("FETCHED ITEMS: ", items);
