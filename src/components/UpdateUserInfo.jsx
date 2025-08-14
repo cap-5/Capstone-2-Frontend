@@ -28,18 +28,16 @@ const UpadteUserInfo = () => {
   const updateUserData = async () => {
     try {
       const res = await axios.patch(
-        "http://localhost:8080/api/users/3",
-        userInfo,
-        {
-          withCredentials: true,
-        }
+        "http://localhost:8080/api/users/1",
+        userInfo
       );
       console.log(res.data.User);
       const grabUserInfo = res.data.User;
+      console.log(grabUserInfo);
       setUerInfo({
-        firstName: grabUserInfo.firstName,
-        lastName: grabUserInfo.lastName,
-        email: grabUserInfo.email,
+        firstName: userInfo.firstName,
+        lastName: userInfo.lastName,
+        email: userInfo.email,
       });
     } catch (err) {
       console.error("can not update user info ", err);
@@ -83,17 +81,59 @@ const UpadteUserInfo = () => {
             <td>{userInfo.email}</td>
           </tr>
         </tbody>
-
-        <label for="firstName">firstName: {userInfo.firstName}</label>
+      </table>
+      <div className="form-group">
+        <label htmlFor="firstName" className="form-label">
+          First Name
+        </label>
         <input
           type="text"
-          id="username"
-          name="username"
+          id="firstName"
+          name="firstName"
           value={userInfo.firstName}
           onChange={handleChange}
+          className="form-input"
+          placeholder="Enter first name"
         />
-        <button onclick={handleSubmit}>Click me</button>
-      </table>
+        <button className="form-button" onClick={handleSubmit}>
+          Update
+        </button>
+      </div>
+
+      <div className="form-group">
+        <label htmlFor="lastName" className="form-label">
+          lastName
+        </label>
+        <input
+          type="text"
+          id="lastName"
+          name="lastName"
+          value={userInfo.lastName}
+          onChange={handleChange}
+          className="form-input"
+          placeholder="Enter last name"
+        />
+        <button className="form-button" onClick={handleSubmit}>
+          Update
+        </button>
+      </div>
+      <div className="form-group">
+        <label htmlFor="email" className="form-label">
+          email
+        </label>
+        <input
+          type="text"
+          id="email"
+          name="email"
+          value={userInfo.email}
+          onChange={handleChange}
+          className="form-input"
+          placeholder="Enter your email"
+        />
+        <button className="form-button" onClick={handleSubmit}>
+          Update
+        </button>
+      </div>
     </div>
   );
 };
