@@ -28,7 +28,7 @@ const UserSearch = () => {
   const [invitedUserIds, setInvitedUserIds] = useState([]);
 
   //CHANGE THIS LATER
-  const groupId = 4;
+  const groupId = 6;
 
   const fetchUsers = async () => {
     try {
