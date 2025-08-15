@@ -78,7 +78,7 @@ const App = () => {
           <Route path="DisplayUserinfo" element={<DisplayUserInfo />} />
           <Route path="createAGroup" element={<CreateGroup />} />
           <Route path="UsersReceipts" element={<DisplayUserReceipts />} />
-          <Route path="groupReceipts" element={<GroupRecipts />} />
+          <Route path="roupgReceipts" element={<GroupRecipts />} />
           <Route path="UpadteUserInfo" element={<UpadteUserInfo />} />
         </Routes>
       </div>
