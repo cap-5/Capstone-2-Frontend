@@ -1,8 +1,15 @@
 import React, { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link as RouterLink } from "react-router-dom";
 import axios from "axios";
-import "./AuthStyles.css";
 import { API_URL } from "../shared";
+import {
+  Box,
+  TextField,
+  Button,
+  Typography,
+  Link,
+  CircularProgress,
+} from "@mui/material";
 
 const Signup = ({ setUser }) => {
   const [formData, setFormData] = useState({
@@ -20,38 +27,21 @@ const Signup = ({ setUser }) => {
 
   const validateForm = () => {
     const newErrors = {};
-    
-    if (!formData.firstName) {
-      newErrors.firstName = "First name is required";
-    } 
-
-    if (!formData.lastName) {
-      newErrors.lastName = "Last name is required";
-    } 
-
-    if (!formData.username) {
-      newErrors.username = "Username is required";
-    } else if (formData.username.length < 3 || formData.username.length > 20) {
-      newErrors.username = "Username must be between 3 and 20 characters";
-    }
-
-    if (!formData.password) {
-      newErrors.password = "Password is required";
-    } else if (formData.password.length < 6) {
+    if (!formData.firstName) newErrors.firstName = "First name is required";
+    if (!formData.lastName) newErrors.lastName = "Last name is required";
+    if (!formData.username) newErrors.username = "Username is required";
+    else if (formData.username.length < 3 || formData.username.length > 20)
+      newErrors.username = "Username must be 3-20 characters";
+    if (!formData.password) newErrors.password = "Password is required";
+    else if (formData.password.length < 6)
       newErrors.password = "Password must be at least 6 characters";
-    }
-
-    if (!formData.confirmPassword) {
+    if (!formData.confirmPassword)
       newErrors.confirmPassword = "Please confirm your password";
-    } else if (formData.password !== formData.confirmPassword) {
+    else if (formData.password !== formData.confirmPassword)
       newErrors.confirmPassword = "Passwords do not match";
-    }
-
-    if (!formData.email) {
-      newErrors.email = "Email is required";
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = "Invalid characters"; 
-    }
+    if (!formData.email) newErrors.email = "Email is required";
+    else if (!/\S+@\S+\.\S+/.test(formData.email))
+      newErrors.email = "Invalid email";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -59,10 +49,7 @@ const Signup = ({ setUser }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (!validateForm()) {
-      return;
-    }
+    if (!validateForm()) return;
 
     setIsLoading(true);
     try {
@@ -81,11 +68,10 @@ const Signup = ({ setUser }) => {
       setUser(response.data.user);
       navigate("/");
     } catch (error) {
-      if (error.response?.data?.error) {
-        setErrors({ general: error.response.data.error });
-      } else {
-        setErrors({ general: "An error occurred during signup" });
-      }
+      setErrors({
+        general:
+          error.response?.data?.error || "An error occurred during signup",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -93,141 +79,178 @@ const Signup = ({ setUser }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-
-    // Clear error when user starts typing
-    if (errors[name]) {
-      setErrors((prev) => ({
-        ...prev,
-        [name]: "",
-      }));
-    }
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
   return (
-    <div className="auth-container">
-      <div className="auth-form">
-        <h2>Sign Up</h2>
+    <Box
+      sx={{
+        minHeight: "100vh",
+        width: "100vw",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        position: "relative",
+        overflow: "hidden",
+        background:
+          "linear-gradient(270deg, #001f3f, #0074D9, #7FDBFF, #001f3f)",
+        backgroundSize: "1200% 1200%",
+        animation: "moveGradient 30s linear infinite",
+      }}
+    >
+      <Box
+        component="form"
+        onSubmit={handleSubmit}
+        sx={{
+          zIndex: 1,
+          width: "100%",
+          maxWidth: 450,
+          bgcolor: "rgba(255,255,255,0.1)",
+          backdropFilter: "blur(12px)",
+          borderRadius: 3,
+          p: 4,
+          boxShadow: "0 8px 32px rgba(0,0,0,0.3)",
+          display: "flex",
+          flexDirection: "column",
+          gap: 2,
+          color: "white",
+        }}
+      >
+        <Typography variant="h4" sx={{ textAlign: "center", mb: 2 }}>
+          Sign Up
+        </Typography>
 
         {errors.general && (
-          <div className="error-message">{errors.general}</div>
+          <Typography color="error" sx={{ textAlign: "center" }}>
+            {errors.general}
+          </Typography>
         )}
-      
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="firstName">First Name:</label>
-            <input
-              type="text"
-              id="firstName"
-              name="firstName"
-              value={formData.firstName}
-              onChange={handleChange}
-              className={errors.firstName ? "error" : ""}
-            />
-            {errors.firstName && (
-              <span className="error-text">{errors.firstName}</span>
-            )}
-          </div>
 
-          <div className="form-group">
-            <label htmlFor="lastName">Last Name:</label>
-            <input
-              type="text"
-              id="lastName"
-              name="lastName"
-              value={formData.lastName}
-              onChange={handleChange}
-              className={errors.lastName ? "error" : ""}
-            />
-            {errors.lastName && (
-              <span className="error-text">{errors.lastName}</span>
-            )}
-          </div>
-          
-          <div className="form-group">
-            <label htmlFor="username">Username:</label>
-            <input
-              type="text"
-              id="username"
-              name="username"
-              value={formData.username}
-              onChange={handleChange}
-              className={errors.username ? "error" : ""}
-            />
-            {errors.username && (
-              <span className="error-text">{errors.username}</span>
-            )}
-          </div>
+        <TextField
+          label="First Name"
+          name="firstName"
+          value={formData.firstName}
+          onChange={handleChange}
+          error={!!errors.firstName}
+          helperText={errors.firstName}
+          variant="filled"
+          fullWidth
+          InputProps={{ sx: { color: "white" } }}
+          InputLabelProps={{ sx: { color: "white" } }}
+        />
 
-          <div className="form-group">
-            <label htmlFor="password">Password:</label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              className={errors.password ? "error" : ""}
-            />
-            {errors.password && (
-              <span className="error-text">{errors.password}</span>
-            )}
-          </div>
+        <TextField
+          label="Last Name"
+          name="lastName"
+          value={formData.lastName}
+          onChange={handleChange}
+          error={!!errors.lastName}
+          helperText={errors.lastName}
+          variant="filled"
+          fullWidth
+          InputProps={{ sx: { color: "white" } }}
+          InputLabelProps={{ sx: { color: "white" } }}
+        />
 
-          <div className="form-group">
-            <label htmlFor="confirmPassword">Confirm Password:</label>
-            <input
-              type="password"
-              id="confirmPassword"
-              name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              className={errors.confirmPassword ? "error" : ""}
-            />
-            {errors.confirmPassword && (
-              <span className="error-text">{errors.confirmPassword}</span>
-            )}
-          </div>
+        <TextField
+          label="Username"
+          name="username"
+          value={formData.username}
+          onChange={handleChange}
+          error={!!errors.username}
+          helperText={errors.username}
+          variant="filled"
+          fullWidth
+          InputProps={{ sx: { color: "white" } }}
+          InputLabelProps={{ sx: { color: "white" } }}
+        />
 
-          <div className="form-group">
-            <label htmlFor="email">E-mail:</label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              className={errors.email ? "error" : ""}
-            />
-            {errors.email && (
-              <span className="error-text">{errors.email}</span>
-            )}
-          </div>
-        
-          <div className="form-group">
-            <label htmlFor="profilePic">Profile Pic URL:</label>
-            <input
-              type="text"
-              id="profilePic"
-              name="profilePic"
-              value={formData.profilePic}
-              onChange={handleChange}
-            />
-          </div>
-          
-          <button type="submit" disabled={isLoading}>
-            {isLoading ? "Creating account..." : "Sign Up"}
-          </button>
-        </form>
+        <TextField
+          label="Password"
+          name="password"
+          type="password"
+          value={formData.password}
+          onChange={handleChange}
+          error={!!errors.password}
+          helperText={errors.password}
+          variant="filled"
+          fullWidth
+          InputProps={{ sx: { color: "white" } }}
+          InputLabelProps={{ sx: { color: "white" } }}
+        />
 
-        <p className="auth-link">
-          Already have an account? <Link to="/login">Login</Link>
-        </p>
-      </div>
-    </div>
+        <TextField
+          label="Confirm Password"
+          name="confirmPassword"
+          type="password"
+          value={formData.confirmPassword}
+          onChange={handleChange}
+          error={!!errors.confirmPassword}
+          helperText={errors.confirmPassword}
+          variant="filled"
+          fullWidth
+          InputProps={{ sx: { color: "white" } }}
+          InputLabelProps={{ sx: { color: "white" } }}
+        />
+
+        <TextField
+          label="Email"
+          name="email"
+          type="email"
+          value={formData.email}
+          onChange={handleChange}
+          error={!!errors.email}
+          helperText={errors.email}
+          variant="filled"
+          fullWidth
+          InputProps={{ sx: { color: "white" } }}
+          InputLabelProps={{ sx: { color: "white" } }}
+        />
+
+        <TextField
+          label="Profile Pic URL"
+          name="profilePic"
+          value={formData.profilePic}
+          onChange={handleChange}
+          variant="filled"
+          fullWidth
+          InputProps={{ sx: { color: "white" } }}
+          InputLabelProps={{ sx: { color: "white" } }}
+        />
+
+        <Button
+          type="submit"
+          variant="contained"
+          color="primary"
+          disabled={isLoading}
+          sx={{ py: 1.5, mt: 1 }}
+        >
+          {isLoading ? (
+            <CircularProgress size={24} color="inherit" />
+          ) : (
+            "Sign Up"
+          )}
+        </Button>
+
+        <Typography sx={{ textAlign: "center", mt: 2 }}>
+          Already have an account?{" "}
+          <Link component={RouterLink} to="/login" color="secondary">
+            Login
+          </Link>
+        </Typography>
+      </Box>
+
+      <style>
+        {`
+          @keyframes moveGradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+          }
+        `}
+      </style>
+    </Box>
   );
 };
 

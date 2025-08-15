@@ -1,0 +1,88 @@
+/* Fullscreen hero container */
+.hero-container {
+  position: relative;
+  height: 100vh;
+  width: 100%;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-start; /* 👈 Moves content to the top */
+  justify-content: center;
+  padding-top: 6rem; /* Space from top for breathing room */
+}
+
+
+/* Animated gradient background */
+.animated-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(-45deg, #0f0f0f, #1a1a1a, #111, #0a0a0a);
+  background-size: 400% 400%;
+  animation: gradientMove 15s ease infinite;
+  z-index: 0;
+}
+
+
+/* Glass overlay for content */
+.content {
+  position: relative;
+  z-index: 1;
+  padding: 3rem;
+  text-align: center;
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4);
+}
+
+
+/* Title styling */
+.title {
+  font-weight: bold;
+  letter-spacing: 2px;
+  margin-bottom: 1rem;
+  color: #fff;
+  text-shadow: 0 4px 15px rgba(0, 0, 0, 0.8);
+}
+
+
+/* Subtitle styling */
+.subtitle {
+  font-weight: 300;
+  color: #ccc;
+  margin-bottom: 2rem;
+}
+
+
+/* CTA button */
+.cta-button {
+  background: linear-gradient(90deg, #ff6f61, #ff9068);
+  font-size: 1.1rem;
+  font-weight: bold;
+  padding: 0.75rem 2rem;
+  text-transform: none;
+  border-radius: 30px;
+  transition: all 0.3s ease;
+}
+
+
+.cta-button:hover {
+  transform: scale(1.05);
+  background: linear-gradient(90deg, #ff9068, #ff6f61);
+}
+
+
+/* Background animation */
+@keyframes gradientMove {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
