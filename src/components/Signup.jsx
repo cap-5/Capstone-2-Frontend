@@ -11,7 +11,7 @@ import {
   CircularProgress,
 } from "@mui/material";
 
-const Signup = ({ setUser }) => {
+const Signup = ({ setUser, onAuth0Login }) => {
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -232,6 +232,14 @@ const Signup = ({ setUser }) => {
             "Sign Up"
           )}
         </Button>
+
+        <button
+          type="button"
+          onClick={onAuth0Login}
+          className="sign in with google "
+        >
+          Login with Auth0
+        </button>
 
         <Typography sx={{ textAlign: "center", mt: 2 }}>
           Already have an account?{" "}
