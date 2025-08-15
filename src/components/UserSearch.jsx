@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { API_URL } from "../shared";
+import { useNavigate, useParams } from "react-router-dom"; 
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -19,6 +20,8 @@ import {
 import SearchIcon from "@mui/icons-material/Search";
 
 const UserSearch = () => {
+  const navigate = useNavigate(); 
+  const { id: groupId } = useParams();
   const [users, setUsers] = useState([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
@@ -26,9 +29,20 @@ const UserSearch = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [invitedUserIds, setInvitedUserIds] = useState([]);
+  const [memberIds, setMemberIds] = useState(new Set()); 
 
   //CHANGE THIS LATER
-  const groupId = 6;
+  //const groupId = 4;
+
+  const fetchMembers = async () => {
+    try {
+      const res = await axios.get(`${API_URL}/api/group/${groupId}/members`,
+      { withCredentials: true });
+      setMemberIds(new Set((res.data || []).map(m => m.id)));
+    } catch (error) {
+      console.error("Failed to load group members", error)
+    }
+  };
 
   const fetchUsers = async () => {
     try {
@@ -63,8 +77,17 @@ const UserSearch = () => {
   };
 
   useEffect(() => {
+    if (!groupId) {
+      toast.error("Missing group id in URL");
+      return;
+    }
+    fetchMembers();
+  }, [groupId]);
+
+  useEffect(() => {
+    if (!groupId) return;
     fetchUsers();
-  }, [currentPage]);
+  }, [currentPage, groupId]);
 
   const handleSearch = () => {
     setCurrentPage(1);
