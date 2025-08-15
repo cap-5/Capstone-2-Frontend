@@ -79,8 +79,9 @@ return (
         <Route path="/Group" element={<Group />} />
         <Route path="/groups/:id" element={<GroupDetail />} />
         <Route path="/create-group" element={<CreateGroup />} />
-        <Route path="/user-search" element={<UserSearch />} />
+        <Route path="/user-search" element={<UserSearch />} /> 
         <Route path="/assign/:groupId/:receiptId" element={<AssignItems />} />
+        <Route path="/group/:id/user-search" element={<UserSearch />} />
          {/* nested navbar layout */}
         <Route path="/dashboard" element={<Dashboard />}>
           <Route path="profile" element={<DisplayUserInfo />} />

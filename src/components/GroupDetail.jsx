@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { API_URL } from "../shared";
-import { useParams } from "react-router-dom"
+import { useParams, useNavigate } from "react-router-dom"; 
 import PersonRemoveIcon from "@mui/icons-material/PersonRemove";
+import PersonAddAltIcon from "@mui/icons-material/PersonAddAlt";
 import IconButton from "@mui/material/IconButton";
 
 import { // Modify this later, could look nicer but this is good for now //
@@ -21,6 +22,7 @@ import { // Modify this later, could look nicer but this is good for now //
 
 function GroupDetail () {
   const { id } = useParams(); 
+  const navigate = useNavigate(); 
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
@@ -102,6 +104,17 @@ function GroupDetail () {
           ))
         )}
       </List>
+
+      {/* Add members button */}
+      <Box sx={{ mt: 2, display: "flex", justifyContent: "flex-end" }}>
+        <Button
+          startIcon={<PersonAddAltIcon />}
+          variant="contained"
+          onClick={() => navigate(`/group/${id}/user-search`)}
+        >
+          Add members
+        </Button>
+      </Box>
     </Box>
   );
 }
