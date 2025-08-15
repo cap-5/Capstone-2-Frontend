@@ -10,8 +10,11 @@ import {
   Link,
   CircularProgress,
 } from "@mui/material";
+import { useAuth0 } from "@auth0/auth0-react";
+import GoogleIcon from "@mui/icons-material/Google";
 
-const Signup = ({ setUser, onAuth0Login }) => {
+const Signup = ({ setUser }) => {
+  const { loginWithRedirect } = useAuth0();
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -36,7 +39,7 @@ const Signup = ({ setUser, onAuth0Login }) => {
     else if (formData.password.length < 6)
       newErrors.password = "Password must be at least 6 characters";
     if (!formData.confirmPassword)
-      newErrors.confirmPassword = "Please confirm your password";
+      newErrors.confirmPassword = "Pleaase confirm your password";
     else if (formData.password !== formData.confirmPassword)
       newErrors.confirmPassword = "Passwords do not match";
     if (!formData.email) newErrors.email = "Email is required";
@@ -219,6 +222,7 @@ const Signup = ({ setUser, onAuth0Login }) => {
           InputLabelProps={{ sx: { color: "white" } }}
         />
 
+        {/* Regular Sign Up Button */}
         <Button
           type="submit"
           variant="contained"
@@ -233,13 +237,31 @@ const Signup = ({ setUser, onAuth0Login }) => {
           )}
         </Button>
 
-        <button
-          type="button"
-          onClick={onAuth0Login}
-          className="sign in with google "
+        {/* Google Sign Up / Login Button */}
+        <Button
+          variant="outlined"
+          startIcon={<GoogleIcon />}
+          onClick={() =>
+            loginWithRedirect({
+              connection: "google-oauth2",
+              screen_hint: "signup",
+            })
+          }
+          sx={{
+            py: 1.5,
+            mt: 1,
+            color: "white",
+            borderColor: "white",
+            "&:hover": {
+              borderColor: "#4285F4",
+              backgroundColor: "#f5f5f5",
+              color: "black",
+            },
+          }}
+          fullWidth
         >
-          Login with Auth0
-        </button>
+          Sign up with Google
+        </Button>
 
         <Typography sx={{ textAlign: "center", mt: 2 }}>
           Already have an account?{" "}

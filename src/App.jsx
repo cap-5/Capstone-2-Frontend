@@ -20,6 +20,9 @@ import AssignItems from "./components/AssignItems";
 import UserSearch from "./components/UserSearch";
 import Notifications from "./components/myNotifications";
 import Dash from "./components/test";
+import { Auth0Provider, useAuth0 } from "@auth0/auth0-react";
+import { auth0Config } from "./auth0-config";
+
 const socket = io(SOCKETS_URL, {
   withCredentials: NODE_ENV === "production",
 });
@@ -95,9 +98,11 @@ const App = () => {
 
 const Root = () => {
   return (
-    <Router>
-      <App />
-    </Router>
+    <Auth0Provider {...auth0Config}>
+      <Router>
+        <App />
+      </Router>
+    </Auth0Provider>
   );
 };
 

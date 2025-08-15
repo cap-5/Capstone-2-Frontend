@@ -10,12 +10,15 @@ import {
   Link,
   CircularProgress,
 } from "@mui/material";
+import GoogleIcon from "@mui/icons-material/Google";
+import { useAuth0 } from "@auth0/auth0-react";
 
 const Login = ({ setUser }) => {
   const [formData, setFormData] = useState({ username: "", password: "" });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { loginWithRedirect } = useAuth0();
 
   const validateForm = () => {
     const newErrors = {};
@@ -137,6 +140,29 @@ const Login = ({ setUser }) => {
           sx={{ py: 1.5, mt: 1 }}
         >
           {isLoading ? <CircularProgress size={24} color="inherit" /> : "Login"}
+        </Button>
+
+        {/* Google Sign In Button */}
+        <Button
+          variant="outlined"
+          startIcon={<GoogleIcon />}
+          onClick={() =>
+            loginWithRedirect({
+              connection: "google-oauth2", // Auth0 connection name for Google
+            })
+          }
+          sx={{
+            py: 1.5,
+            mt: 1,
+            color: "white",
+            borderColor: "white",
+            "&:hover": {
+              borderColor: "#ccc",
+              backgroundColor: "rgba(255,255,255,0.1)",
+            },
+          }}
+        >
+          Sign in with Google
         </Button>
 
         <Typography sx={{ textAlign: "center", mt: 2 }}>
