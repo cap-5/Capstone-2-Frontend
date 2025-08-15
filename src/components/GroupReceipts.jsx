@@ -47,11 +47,11 @@ const GetGroupReceipts = () => {
         <Table sx={{ minWidth: 650 }}>
           <TableHead>
             <TableRow>
-              <TableCell>Title</TableCell>
-              <TableCell align="right">Body</TableCell>
-              <TableCell align="right">Category</TableCell>
-              <TableCell align="right">Total</TableCell>
-              <TableCell align="right">Created At:</TableCell>
+              <TableCell sx={{ fontWeight: 'bold'}}>Title</TableCell>
+              <TableCell align="right" sx={{ fontWeight: 'bold'}}>Body</TableCell>
+              <TableCell align="right" sx={{ fontWeight: 'bold'}}>Category</TableCell>
+              <TableCell align="right" sx={{ fontWeight: 'bold'}}>Total</TableCell>
+              <TableCell align="right" sx={{ fontWeight: 'bold'}}>Created At:</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
