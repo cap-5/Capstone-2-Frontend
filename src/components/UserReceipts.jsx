@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams } from "react-router-dom";
+import { API_URL } from "../shared";
 
 const DisplayUserReceipts = () => {
   const [userReceipts, setUserReceipts] = useState([]); 
@@ -8,7 +9,7 @@ const DisplayUserReceipts = () => {
 
   const fetchUserReceipts = async () => {
     try {
-      const res = await axios.get(`http://localhost:8080/api/users/${userId}`);
+      const res = await axios.get(`${API_URL}/api/users/${userId}`);
       console.log(res.data);
       setUserReceipts(res.data);
       console.log(userReceipts);
@@ -23,13 +24,17 @@ const DisplayUserReceipts = () => {
   return (
     <div>
       <ul>
-        {userReceipts.map((recpit) => {
-          return (
+        {userReceipts.map((recpit) => 
             <li key={recpit.id}>
-              title:{recpit.title},{recpit.body}
+            <h2>Title:{recpit.title}</h2>
+            <ul>
+              <li>Body: {recpit.body}</li>
+              <li>Category: {recpit.category ? recpit.category : "No category provided"}</li>
+              <li>Total: ${recpit.totalPay ? recpit.totalPay : 0 }</li>
+              <li>Created at: {recpit.createdAt}</li>
+            </ul>
             </li>
-          );
-        })}
+        )}
       </ul>
     </div>
   );
