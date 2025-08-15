@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { API_URL } from "../shared";
 
 const DisplayUserInfo = () => {
   const [formData, setFormData] = useState({
@@ -11,7 +12,7 @@ const DisplayUserInfo = () => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const res = await axios.get("http://localhost:8080/api/users/me", {
+        const res = await axios.get(`${API_URL}/api/users/me`, {
           withCredentials: true,
         });
 

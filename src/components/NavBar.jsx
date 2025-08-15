@@ -38,39 +38,31 @@ const NavBar = ({ user, onLogout }) => {
             Capstone II
           </Typography>
 
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-            {user ? (
-              <>
-                <Button component={RouterLink} to="/upload/1" color="inherit">
-                  OCR Tool
-                </Button>
-                <Button
-                  component={RouterLink}
-                  to="/user-search"
-                  color="inherit"
-                >
-                  User Search
-                </Button>
-                <Button
-                  component={RouterLink}
-                  to="/create-group"
-                  color="inherit"
-                >
-                  Create Group
-                </Button>
-                <Button component={RouterLink} to="/assign" color="inherit">
-                  Assign
-                </Button>
-
-                <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                  <Button
-                    component={RouterLink}
-                    to="/dashboard"
-                    color="inherit"
-                  >
-                    Dashboard
-                  </Button>
-                </Box>
+        {/* Links */}
+        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+          {user ? (
+            <>
+              <Button component={RouterLink} to="/upload/1" color="inherit">
+                OCR Tool
+              </Button>
+              <Button component={RouterLink} to="/Group" color="inherit">
+                My Groups
+              </Button>
+              <Button component={RouterLink} to="/user-search" color="inherit">
+                User Search
+              </Button>
+              <Button component={RouterLink} to="/assign" color="inherit">
+                Assign
+              </Button>
+              <Button component={RouterLink} to="/dashboard" color="inherit">
+                Dashboard
+              </Button>
+              <Typography
+                variant="body1"
+                sx={{ color: "text.secondary", ml: 2, mr: 1 }}
+              >
+                Welcome, {user.username}!
+              </Typography>
 
                 <Button
                   onClick={handleLogout}
