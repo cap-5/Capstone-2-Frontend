@@ -83,6 +83,7 @@ const App = () => {
           <Route path="/create-group" element={<CreateGroup />} />
           <Route path="/user-search" element={<UserSearch />} />
           <Route path="/assign/:groupId/:receiptId" element={<AssignItems />} />
+          <Route path="/group/:id/user-search" element={<UserSearch />} />
           <Route path="/UserReceipts/:userId" element={<UserReceipts />} />
           <Route path="/GroupReceipts/:groupId" element={<GroupReceipts />} />
           {/* nested navbar layout */}

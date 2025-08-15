@@ -3,6 +3,10 @@ import axios from "axios";
 import { API_URL } from "../shared";
 import { useNavigate } from "react-router-dom"; 
 import GroupAddIcon from "@mui/icons-material/GroupAdd"
+import IconButton from "@mui/material/IconButton";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 
 import { // Modify this later, could look nicer but this is good for now //
@@ -67,7 +71,7 @@ function Groups () {
       setCreateOpen(true);
     };
 
-    // Backend, updates the local list
+    // Backend, updates the local list.
     const handleCreate = async () => {
       if (!form.groupName.trim()) {
         return;
@@ -93,7 +97,23 @@ function Groups () {
     const goToGroup = (groupId) => {
     navigate(`/groups/${groupId}`);
   };
+
+    const deleteGroup = async (groupId) => {
+      try {
+        const res = await axios.delete(`${API_URL}/api/group/delete/${groupId}`, {
+          withCredentials: true 
+        });
+        toast.success("Group deleted successfully!");
       
+        setGroups((prev) => prev.filter((g) => g.id !== groupId));
+      } catch (err) {
+        console.error("Delete group error", err);
+        toast.error(err?.response?.data?.error || "Could not delete group.");
+      }
+    };
+
+
+    //  | CSS Stuff Below Here || \\
     const EmptyState = () => (
     <Box
       sx={{
@@ -123,6 +143,18 @@ function Groups () {
         My Groups
       </Typography>
 
+      {/* Toast notifications (Move this later somewhere else eventually) */}
+            <ToastContainer
+              position="top-center"
+              autoClose={3000}
+              hideProgressBar={false}
+              newestOnTop={false}
+              closeOnClick
+              pauseOnFocusLoss
+              draggable
+              pauseOnHover
+            />
+
       {/* Group List */}
       <Box
         sx={{
@@ -143,7 +175,7 @@ function Groups () {
           <List disablePadding>
             {groups.map((g, idx) => {
               const title = g.groupName || "Untitled Group";
-              const subtitle = g.expenseSummary ?? "no expenses"; 
+              const subtitle = g.expenseSummary ?? "No expenses"; 
               const initials =
                 title
                   .split(" ")
@@ -170,6 +202,18 @@ function Groups () {
                       primaryTypographyProps={{ fontWeight: 500 }}
                       secondaryTypographyProps={{ color: "text.secondary" }}
                     />
+                    <IconButton
+                      edge="end"
+                      aria-label="delete group"
+                      onClick={(e) => {
+                        e.stopPropagation(); // Move the line below to the actual function
+                        if (window.confirm("Are you sure you want to delete this group?")) {
+                          deleteGroup(g.id);
+                        }
+                      }}
+                    >
+                    <DeleteOutlineIcon />
+                  </IconButton>
                   </ListItemButton>
                   {idx < groups.length - 1 && <Divider component="li" />}
                 </React.Fragment>

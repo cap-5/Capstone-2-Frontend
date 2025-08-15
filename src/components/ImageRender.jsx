@@ -266,7 +266,7 @@ function OcrComponent() {
 
       {backendTotal !== null && (
         <Typography variant="h6" mt={3}>
-          Total from backend: ${backendTotal.toFixed(2)}
+          Total: ${backendTotal.toFixed(2)}
         </Typography>
       )}
 

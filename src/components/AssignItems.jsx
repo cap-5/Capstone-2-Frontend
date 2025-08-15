@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {useParams} from "react-router-dom"
+import { useParams } from "react-router-dom";
 import axios from "axios";
 import { API_URL } from "../shared";
 
@@ -18,8 +18,8 @@ const dummyGroup = [
 export default function AssignItems() {
   const { groupId, receiptId } = useParams();
 
-  const [items, setItems] = useState(dummyReceipt);
-  const [payers, setPayers] = useState(dummyGroup);
+  const [items, setItems] = useState([]);
+  const [payers, setPayers] = useState([]);
   /* 
   Store item-payer assignments like this:
     { itemId: x, payerId: [] }
@@ -28,6 +28,15 @@ export default function AssignItems() {
 
   console.log("ASSIGNMENTS: ", assignments);
 
+  const isPayerChecked = (itemId, payerId) =>
+    assignments?.some((a) => a.itemId === itemId && a.payerId === payerId) ||
+    false;
+
+  const isAllChecked = (itemId) =>
+    payers?.length > 0 &&
+    payers.every((p) =>
+      assignments?.some((a) => a.itemId === itemId && a.payerId === p.id)
+    );
   // Assign the passed item to the selected payer
   function handleAssignItem(e, item, price, payer) {
     if (e.target.checked) {
@@ -53,6 +62,22 @@ export default function AssignItems() {
   //     setAssignments()
   //   }
   // }
+
+  function handleAssignAll(e, itemId, price) {
+    setAssignments((prev) => {
+      if (e.target.checked) {
+        const allAssignments = payers.map((payer) => ({
+          itemId,
+          itemPrice: price,
+          payerId: payer.id,
+        }));
+        const filteredPrev = prev.filter((a) => a.itemId !== itemId);
+        return [...filteredPrev, ...allAssignments];
+      } else {
+        return prev.filter((a) => a.itemId !== itemId);
+      }
+    });
+  }
 
   // Reformat assignment state for easier calculation
   function groupAssignments(assignments) {
@@ -91,8 +116,33 @@ export default function AssignItems() {
 
   function handleUpdateAssignment() {
     const newAssignments = groupAssignments(assignments);
-    console.log("COMPRESSED: ", newAssignments);
-    calculateTotal(newAssignments);
+    const updatedPayers = calculateTotal(newAssignments);
+    setPayers(updatedPayers); // now UI updates properly
+  }
+
+  async function handleSendRequest() {
+    const payments = payers
+      .filter((p) => p.total > 0)
+      .map((p) => ({
+        payerId: p.id,
+        amount: p.total,
+      }));
+
+    try {
+      const res = await axios.post(
+        `${API_URL}/api/group/${groupId}/receipts/${receiptId}/send-request`,
+        { payments },
+        { withCredentials: true }
+      );
+      console.log("Request sent:", res.data);
+      alert("Payment requests sent!");
+    } catch (err) {
+      console.error(
+        "Error sending requests:",
+        err.response?.data || err.message
+      );
+      alert("Failed to send payment requests.");
+    }
   }
 
   function calculateTotal(assignments) {
@@ -102,17 +152,17 @@ export default function AssignItems() {
      * Loop thru payers, update each payer's "total"  state by the split price.
      */
     console.log("ASSIGNMENTS FROM CALCTOTAL: ", assignments);
-    let newPayers = [...payers]; // make a copy of payers to store updated payer objects
-    for (const payer of newPayers) {
-      payer.total = 0;
-    }
+    let newPayers = [...payers].map((p) => ({ ...p, total: 0 }));
+
     console.log("COPY OF PAYERS FROM CALC TOTAL: ", newPayers);
     for (let i = 0; i < assignments.length; i++) {
       console.log("CALCULATING PRICE OF ITEM #:", assignments[i].itemId);
 
-      const thisItemPayers = assignments[i].payers;
-      const thisItemNumPayers = assignments[i].payers.length;
+      const thisItemPayers = assignments[i].payers || [];
+
+      const thisItemNumPayers = thisItemPayers.length;
       console.log("NUM PAYERS: ", thisItemNumPayers);
+      if (thisItemNumPayers === 0) continue;
       const thisItemSplitPrice = assignments[i].itemPrice / thisItemNumPayers;
       console.log("DIVIDED PRICE: ", thisItemSplitPrice);
       // update each payer's total in the newPayers array
@@ -121,10 +171,11 @@ export default function AssignItems() {
         console.log("UPDATING TOTAL OF PAYER ID: ", thisPayerId);
 
         const thisPayer = newPayers.find((payer) => payer.id === thisPayerId);
-        const oldTotal = thisPayer.total;
+        if (thisPayer) {
+          thisPayer.total += thisItemSplitPrice;
+        }
         console.log("OLD PAYER OBJECT: ", thisPayer);
 
-        thisPayer.total = oldTotal + thisItemSplitPrice;
         console.log("UPDATED PAYER OBJECT: ", thisPayer);
 
         // let newPayers = payers.filter(payer => payer.id !== thisPayerId) // filter out the old payer object
@@ -132,7 +183,7 @@ export default function AssignItems() {
       }
     }
     setPayers(newPayers);
-
+    return newPayers;
     /*     let total = 0;
     for (let i = 0; i < assignments.length; i++) {
       if (assignments[i].payerId === payer) {
@@ -167,11 +218,12 @@ export default function AssignItems() {
   }
 
   useEffect(() => {
-      async function fetchMembers() {
+    async function fetchMembers() {
+      try {
         const groupResponse = await axios.get(
           `${API_URL}/api/group/${groupId}/members`
         );
-        const members = groupResponse.data;
+        const members = groupResponse.data || []; // default to empty array
         const trimmedMembers = members.map(({ id, firstName, lastName }) => ({
           id,
           name: firstName + " " + lastName,
@@ -180,74 +232,78 @@ export default function AssignItems() {
         console.log("FETCHED GROUP MEMBERS: ", members);
         console.log("TRIMMED: ", trimmedMembers);
         setPayers(trimmedMembers);
+      } catch (err) {
+        console.error("Error fetching group members:", err);
+        setPayers([]); // fallback
       }
+    }
 
-      async function fetchItems() {
+    async function fetchItems() {
+      try {
         const receiptResponse = await axios.get(
           `${API_URL}/api/receipts/${receiptId}/items`
         );
-        const items = receiptResponse.data;
-        console.log("FETCHED ITEMS: ", items);
-
+        const items = receiptResponse.data || []; // default to empty array
         const trimmedItems = items.map(({ id, name, price }) => ({
           id,
           name,
           price,
         }));
+        console.log("FETCHED ITEMS: ", items);
         console.log("TRIMMED ITEMS: ", trimmedItems);
         setItems(trimmedItems);
+      } catch (err) {
+        console.error("Error fetching items:", err);
+        setItems([]); // fallback
       }
+    }
 
     fetchItems();
     fetchMembers();
-    
-    
-  }, []);
+  }, [groupId, receiptId]);
 
   return (
     <div>
       <h1>Assign Items</h1>
 
-      <div>
-        <h2>Items to be Assigned:</h2>
-        <ul>
-          {items.map((item) => (
-            <li key={item.id}>
-              {item.name} - ${item.price} <br></br>
-              <input type="checkbox" name="all" 
-              // onChange={(e) => handleAssignAll(e, item.id)}
-              ></input>
-              <label htmlFor="all">All </label>
-              {payers.map((payer) => (
-                <span key={payer.id}>
-                  <input
-                    type="checkbox"
-                    name={payer.name}
-                    onChange={(e) =>
-                      handleAssignItem(e, item.id, item.price, payer.id)
-                    }
-                  ></input>
-                  <label htmlFor={payer.name}>{payer.name + " "}</label>
-                </span>
-              ))}
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      <div>
-        <h2>Payers:</h2>
-        {payers.map((payer) => (
-          <li key={payer.id}>
-            {payer.name + " "}
-            Total: {payer.total}
+      <h2>Items to be Assigned:</h2>
+      <ul>
+        {items?.map((item) => (
+          <li key={item.id}>
+            {item.name} - ${item.price} <br />
+            <input
+              type="checkbox"
+              checked={isAllChecked(item.id)}
+              onChange={(e) => handleAssignAll(e, item.id, item.price)}
+            />
+            <label>All</label>
+            {payers?.map((payer) => (
+              <span key={payer.id}>
+                <input
+                  type="checkbox"
+                  checked={isPayerChecked(item.id, payer.id)}
+                  onChange={(e) =>
+                    handleAssignItem(e, item.id, item.price, payer.id)
+                  }
+                />
+                <label>{payer.name}</label>
+              </span>
+            ))}
           </li>
         ))}
-      </div>
+      </ul>
 
-      <button type="button" onClick={handleUpdateAssignment}>
-        Update
-      </button>
+      <h2>Payers:</h2>
+      <ul>
+        {payers?.map((payer) => (
+          <li key={payer.id}>
+            {payer.name} - Total: ${payer.total.toFixed(2)}
+          </li>
+        ))}
+      </ul>
+
+      <button onClick={handleUpdateAssignment}>Update</button>
+      <button onClick={handleSendRequest}>Send Payment Requests</button>
     </div>
   );
 }
