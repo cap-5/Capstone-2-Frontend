@@ -78,7 +78,7 @@ const App = () => {
         <Routes>
           <Route path="/login" element={<Login setUser={setUser} />} />
           <Route path="/signup" element={<Signup setUser={setUser} />} />
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<Home user={user} />} />
           <Route path="*" element={<NotFound />} />
           <Route path="/upload/:groupId" element={<ImageRender />} />
           <Route path="/Group" element={<Group />} />

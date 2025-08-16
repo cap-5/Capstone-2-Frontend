@@ -54,12 +54,6 @@ const NavBar = ({ user, onLogout }) => {
                 <Button component={RouterLink} to="/dashboard" color="inherit">
                   Dashboard
                 </Button>
-                <Typography
-                  variant="body1"
-                  sx={{ color: "text.secondary", ml: 2, mr: 1 }}
-                >
-                  Welcome, {user.username}!
-                </Typography>
                 <Button
                   onClick={handleLogout}
                   variant="contained"
