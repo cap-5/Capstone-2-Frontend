@@ -121,11 +121,10 @@ function OcrComponent() {
     setReceiptItems(enriched);
   }, [parsedItems]);
 
- 
   const handleImageUpload = (e) => {
     if (e.target.files[0]) {
       setImageFile(e.target.files[0]); // Save the uploaded file in state
-      setOcrResult("Recognizing..."); 
+      setOcrResult("Recognizing...");
       setBackendTotal(null); // Clear any previous total value
     }
   };
@@ -187,99 +186,105 @@ function OcrComponent() {
       setIsSaving(false);
     }
   };
-
   return (
     <Box
       sx={{
-        maxWidth: 600,
-        mx: "auto",
-        p: 3,
-        borderRadius: 2,
-        boxShadow: 3,
-        bgcolor: "background.paper",
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: "#fff", // simple white background
       }}
     >
-      <Typography variant="h4" mb={3} align="center">
-        Receipt OCR Uploader
-      </Typography>
+      <Box
+        sx={{
+          maxWidth: 600,
+          width: "100%",
+          mx: 2,
+          p: 3,
+          borderRadius: 2,
+          boxShadow: 3,
+          bgcolor: "background.paper", // default MUI card color
+          color: "text.primary",
+        }}
+      >
+        <Typography variant="h4" mb={3} align="center">
+          Receipt OCR Uploader
+        </Typography>
 
-      <Button variant="contained" component="label" fullWidth>
-        Upload Image
-        <input
-          type="file"
-          accept="image/*"
-          hidden
-          onChange={handleImageUpload}
-        />
-      </Button>
+        <Button variant="contained" component="label" fullWidth>
+          Upload Image
+          <input
+            type="file"
+            accept="image/*"
+            hidden
+            onChange={handleImageUpload}
+          />
+        </Button>
 
-      <Typography variant="subtitle1" mt={3} mb={1}>
-        OCR Result (editable):
-      </Typography>
+        <Typography variant="subtitle1" mt={3} mb={1}>
+          OCR Result (editable):
+        </Typography>
 
-      <TextField
-        multiline // Makes this TextField behave like a textarea (multi-line input)
-        minRows={6}
-        fullWidth
-        variant="outlined" // Gives the input a visible border outline (MUI style)
-        value={editedBody} // Controlled component: the displayed text is from the React state 'editedBody'
-        onChange={(e) => setEditedBody(e.target.value)}
-        /* onChange handler updates 'editedBody' state as user types,
-     making this TextField editable by syncing the input's value with state */
-      />
-      <FormControl fullWidth sx={{ mt: 3 }}>
-        <InputLabel id="category-label">Category</InputLabel>
-
-        <Select
-          labelId="category-label"
-          value={isOther ? "Other" : category}
-          label="Category"
-          onChange={handleCategoryChange}
-        >
-          <MenuItem value="" disabled>
-            Select a category
-          </MenuItem>
-
-          {/* Map through predefined categories to create selectable options */}
-          {predefinedCategories.map((cat) => (
-            <MenuItem key={cat} value={cat}>
-              {cat}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
-
-      {isOther && (
         <TextField
+          multiline
+          minRows={6}
           fullWidth
           variant="outlined"
-          placeholder="Enter custom category"
-          value={customCategory}
-          onChange={handleCustomCategoryChange}
-          sx={{ mt: 2 }}
+          value={editedBody}
+          onChange={(e) => setEditedBody(e.target.value)}
         />
-      )}
 
-      <Box mt={3}>
-        <EditItems items={receiptItems} setItems={setReceiptItems} />
+        <FormControl fullWidth sx={{ mt: 3 }}>
+          <InputLabel id="category-label">Category</InputLabel>
+          <Select
+            labelId="category-label"
+            value={isOther ? "Other" : category}
+            label="Category"
+            onChange={handleCategoryChange}
+          >
+            <MenuItem value="" disabled>
+              Select a category
+            </MenuItem>
+            {predefinedCategories.map((cat) => (
+              <MenuItem key={cat} value={cat}>
+                {cat}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+
+        {isOther && (
+          <TextField
+            fullWidth
+            variant="outlined"
+            placeholder="Enter custom category"
+            value={customCategory}
+            onChange={handleCustomCategoryChange}
+            sx={{ mt: 2 }}
+          />
+        )}
+
+        <Box mt={3}>
+          <EditItems items={receiptItems} setItems={setReceiptItems} />
+        </Box>
+
+        {backendTotal !== null && (
+          <Typography variant="h6" mt={3}>
+            Total: ${backendTotal.toFixed(2)}
+          </Typography>
+        )}
+
+        <Button
+          variant="contained"
+          fullWidth
+          sx={{ mt: 3 }}
+          onClick={sendToBackend}
+          disabled={isSaving || !receiptItems.length}
+        >
+          {isSaving ? "Saving..." : "Save to Database"}
+        </Button>
       </Box>
-
-      {backendTotal !== null && (
-        <Typography variant="h6" mt={3}>
-          Total from backend: ${backendTotal.toFixed(2)}
-        </Typography>
-      )}
-
-      <Button
-        variant="contained"
-        color="primary"
-        fullWidth
-        sx={{ mt: 3 }}
-        onClick={sendToBackend}
-        disabled={isSaving || !receiptItems.length}
-      >
-        {isSaving ? "Saving..." : "Save to Database"}
-      </Button>
     </Box>
   );
 }
