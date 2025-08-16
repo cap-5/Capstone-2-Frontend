@@ -17,7 +17,11 @@ const MyNotification = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [invites, setInvites] = useState([]);
-  const [snack, setSnack] = useState({ open: false, message: "", severity: "info" });
+  const [snack, setSnack] = useState({
+    open: false,
+    message: "",
+    severity: "info",
+  });
   const [actionLoadingId, setActionLoadingId] = useState(null); // loading per invite button
 
   useEffect(() => {
@@ -49,9 +53,17 @@ const MyNotification = () => {
         { withCredentials: true }
       );
       setInvites((prev) => prev.filter((inv) => inv.id !== inviteId));
-      setSnack({ open: true, message: "Invite accepted!", severity: "success" });
+      setSnack({
+        open: true,
+        message: "Invite accepted!",
+        severity: "success",
+      });
     } catch (err) {
-      setSnack({ open: true, message: err.message || "Error accepting invite", severity: "error" });
+      setSnack({
+        open: true,
+        message: err.message || "Error accepting invite",
+        severity: "error",
+      });
     } finally {
       setActionLoadingId(null);
     }
@@ -69,7 +81,11 @@ const MyNotification = () => {
       setInvites((prev) => prev.filter((inv) => inv.id !== inviteId));
       setSnack({ open: true, message: "Invite declined!", severity: "info" });
     } catch (err) {
-      setSnack({ open: true, message: err.message || "Error declining invite", severity: "error" });
+      setSnack({
+        open: true,
+        message: err.message || "Error declining invite",
+        severity: "error",
+      });
     } finally {
       setActionLoadingId(null);
     }

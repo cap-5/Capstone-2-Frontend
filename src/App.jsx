@@ -21,6 +21,8 @@ import AssignItems from "./components/AssignItems";
 import Notifications from "./components/myNotifications";
 import UserReceipts from "./components/UserReceipts";
 import GroupReceipts from "./components/GroupReceipts";
+import { Auth0Provider } from "@auth0/auth0-react";
+import { auth0Config } from "./auth0-config";
 
 const socket = io(SOCKETS_URL, {
   withCredentials: NODE_ENV === "production",
@@ -75,7 +77,7 @@ const App = () => {
         <Routes>
           <Route path="/login" element={<Login setUser={setUser} />} />
           <Route path="/signup" element={<Signup setUser={setUser} />} />
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<Home user={user} />} />
           <Route path="*" element={<NotFound />} />
           <Route path="/upload/:groupId" element={<ImageRender />} />
           <Route path="/Group" element={<Group />} />
@@ -99,9 +101,11 @@ const App = () => {
 
 const Root = () => {
   return (
-    <Router>
-      <App />
-    </Router>
+    <Auth0Provider {...auth0Config}>
+      <Router>
+        <App />
+      </Router>
+    </Auth0Provider>
   );
 };
 

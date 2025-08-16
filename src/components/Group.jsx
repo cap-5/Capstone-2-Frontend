@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { API_URL } from "../shared";
-import { useNavigate } from "react-router-dom"; 
-import GroupAddIcon from "@mui/icons-material/GroupAdd"
+import { useNavigate } from "react-router-dom";
+import GroupAddIcon from "@mui/icons-material/GroupAdd";
 import IconButton from "@mui/material/IconButton";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-
-import { // Modify this later, could look nicer but this is good for now //
+import {
+  // Modify this later, could look nicer but this is good for now //
   Box,
   Button,
   Typography,
@@ -27,94 +27,100 @@ import { // Modify this later, could look nicer but this is good for now //
   CircularProgress,
 } from "@mui/material";
 
-// No comment, self explanatory 
-const initialCreateState = {groupName: "", description: ""};
+// No comment, self explanatory
+const initialCreateState = { groupName: "", description: "" };
 
 // This creates the default avatar background. Temporary for now. Add your own in the future
 const groupAvatarColor = (name = "") => {
   let hash = 0;
-  for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  for (let i = 0; i < name.length; i++)
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
   const hue = Math.abs(hash) % 360;
   return `hsl(${hue} 60% 45%)`;
-}
+};
 
 // Groups list. A lot features and combining to do still so will be changing
-function Groups () {
-    const navigate = useNavigate() // Still need to update this, not done yet
-    const [groups, setGroups] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [createOpen, setCreateOpen] = useState(false);
-    const [creating, setCreating] = useState(false);
-    const [form, setForm] = useState(initialCreateState);
+function Groups() {
+  const navigate = useNavigate(); // Still need to update this, not done yet
+  const [groups, setGroups] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [form, setForm] = useState(initialCreateState);
 
-    // This fetches the groups for the signed in user
-    const fetchGroups = async () => {
-        try {
-            const res = await axios.get(`${API_URL}/api/group/myGroups`, {
-                withCredentials: true,
-            });
-            setGroups(res.data);
-        }   catch (err) {
-            console.error("Error fetching groups:", err);
-        }   finally {
-            setLoading(false);
-        }
-    };
+  // This fetches the groups for the signed in user
+  const fetchGroups = async () => {
+    try {
+      const res = await axios.get(`${API_URL}/api/group/myGroups`, {
+        withCredentials: true,
+      });
+      setGroups(res.data);
+    } catch (err) {
+      console.error("Error fetching groups:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    useEffect(() => {
-      fetchGroups();
-    }, []);  
+  useEffect(() => {
+    fetchGroups();
+  }, []);
 
-    // This is for when you first create a group. Maybe change later
-    const openCreate = () => {
-      setForm(initialCreateState);
-      setCreateOpen(true);
-    };
+  // This is for when you first create a group. Maybe change later
+  const openCreate = () => {
+    setForm(initialCreateState);
+    setCreateOpen(true);
+  };
 
-    // Backend, updates the local list.
-    const handleCreate = async () => {
-      if (!form.groupName.trim()) {
-        return;
-      }
+  // Backend, updates the local list.
+  const handleCreate = async () => {
+    if (!form.groupName.trim()) {
+      return;
+    }
 
-      try {
-        setCreating(true);
-        const res = await axios.post(`${API_URL}/api/group/create`, {
+    try {
+      setCreating(true);
+      const res = await axios.post(
+        `${API_URL}/api/group/create`,
+        {
           groupName: form.groupName.trim(),
-          description: form.description.trim() }, {
-          withCredentials: true }
-        );
+          description: form.description.trim(),
+        },
+        {
+          withCredentials: true,
+        }
+      );
 
-        setGroups((prev) => [res.data.group, ...prev]);
-        setCreateOpen(false);
-      } catch (err) {
-        console.error("Create group error", err);
-      } finally {
-        setCreating(false);
-      }
-    };
+      setGroups((prev) => [res.data.group, ...prev]);
+      setCreateOpen(false);
+    } catch (err) {
+      console.error("Create group error", err);
+    } finally {
+      setCreating(false);
+    }
+  };
 
-    const goToGroup = (groupId) => {
+  const goToGroup = (groupId) => {
     navigate(`/groups/${groupId}`);
   };
 
-    const deleteGroup = async (groupId) => {
-      try {
-        const res = await axios.delete(`${API_URL}/api/group/delete/${groupId}`, {
-          withCredentials: true 
-        });
-        toast.success("Group deleted successfully!");
-      
-        setGroups((prev) => prev.filter((g) => g.id !== groupId));
-      } catch (err) {
-        console.error("Delete group error", err);
-        toast.error(err?.response?.data?.error || "Could not delete group.");
-      }
-    };
+  const deleteGroup = async (groupId) => {
+    try {
+      const res = await axios.delete(`${API_URL}/api/group/delete/${groupId}`, {
+        withCredentials: true,
+      });
+      toast.success("Group deleted successfully!");
 
+      console.log(res.data);
+      setGroups((prev) => prev.filter((g) => g.id !== groupId));
+    } catch (err) {
+      console.error("Delete group error", err);
+      toast.error(err?.response?.data?.error || "Could not delete group.");
+    }
+  };
 
-    //  | CSS Stuff Below Here || \\
-    const EmptyState = () => (
+  //  | CSS Stuff Below Here || \\
+  const EmptyState = () => (
     <Box
       sx={{
         py: 6,
@@ -136,7 +142,7 @@ function Groups () {
         maxWidth: 640,
         mx: "auto",
         px: 2,
-        py: 3,
+        py: 10,
       }}
     >
       <Typography variant="h5" sx={{ mb: 2 }}>
@@ -144,16 +150,16 @@ function Groups () {
       </Typography>
 
       {/* Toast notifications (Move this later somewhere else eventually) */}
-            <ToastContainer
-              position="top-center"
-              autoClose={3000}
-              hideProgressBar={false}
-              newestOnTop={false}
-              closeOnClick
-              pauseOnFocusLoss
-              draggable
-              pauseOnHover
-            />
+      <ToastContainer
+        position="top-center"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
 
       {/* Group List */}
       <Box
@@ -175,7 +181,7 @@ function Groups () {
           <List disablePadding>
             {groups.map((g, idx) => {
               const title = g.groupName || "Untitled Group";
-              const subtitle = g.expenseSummary ?? "No expenses"; 
+              const subtitle = g.expenseSummary ?? "No expenses";
               const initials =
                 title
                   .split(" ")
@@ -194,7 +200,9 @@ function Groups () {
                     }}
                   >
                     <ListItemAvatar>
-                      <Avatar sx={{ bgcolor: groupAvatarColor(title) }}>{initials}</Avatar>
+                      <Avatar sx={{ bgcolor: groupAvatarColor(title) }}>
+                        {initials}
+                      </Avatar>
                     </ListItemAvatar>
                     <ListItemText
                       primary={title}
@@ -207,13 +215,17 @@ function Groups () {
                       aria-label="delete group"
                       onClick={(e) => {
                         e.stopPropagation(); // Move the line below to the actual function
-                        if (window.confirm("Are you sure you want to delete this group?")) {
+                        if (
+                          window.confirm(
+                            "Are you sure you want to delete this group?"
+                          )
+                        ) {
                           deleteGroup(g.id);
                         }
                       }}
                     >
-                    <DeleteOutlineIcon />
-                  </IconButton>
+                      <DeleteOutlineIcon />
+                    </IconButton>
                   </ListItemButton>
                   {idx < groups.length - 1 && <Divider component="li" />}
                 </React.Fragment>
@@ -237,30 +249,57 @@ function Groups () {
       </Box>
 
       {/* Create Group */}
-      <Dialog open={createOpen} onClose={() => setCreateOpen(false)} fullWidth maxWidth="sm">
+      <Dialog
+        open={createOpen}
+        onClose={() => setCreateOpen(false)}
+        fullWidth
+        maxWidth="sm"
+      >
         <DialogTitle>Create a new group</DialogTitle>
-        <DialogContent sx={{ pt: 2 }}>
+        <DialogContent sx={{ pt: 3 }}>
+          {" "}
+          {/* Add some top padding */}
           <TextField
             label="Group name"
             value={form.groupName}
-            onChange={(e) => setForm((f) => ({ ...f, groupName: e.target.value }))}
+            onChange={(e) =>
+              setForm((f) => ({ ...f, groupName: e.target.value }))
+            }
             autoFocus
             fullWidth
-            sx={{ mb: 2 }}
+            sx={{ mt: 2, mb: 2 }} // mt pushes it down a bit from title
           />
           <TextField
             label="Description (optional)"
             value={form.description}
-            onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+            onChange={(e) =>
+              setForm((f) => ({ ...f, description: e.target.value }))
+            }
             fullWidth
             multiline
             minRows={2}
           />
         </DialogContent>
-        <DialogActions>
+        <DialogActions
+          sx={{
+            px: 3,
+            pb: 3,
+            display: "flex",
+            justifyContent: "flex-end",
+            gap: 1, // space between buttons
+          }}
+        >
           <Button onClick={() => setCreateOpen(false)}>Cancel</Button>
-          <Button onClick={handleCreate} variant="contained" disabled={creating}>
-            {creating ? "Creating..." : "Create group"}
+          <Button
+            onClick={handleCreate}
+            variant="contained"
+            disabled={creating}
+          >
+            {creating ? (
+              <CircularProgress size={20} color="inherit" />
+            ) : (
+              "Create group"
+            )}
           </Button>
         </DialogActions>
       </Dialog>

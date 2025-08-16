@@ -16,13 +16,22 @@ const NavBar = ({ user, onLogout }) => {
 
   return (
     <>
-      <AppBar position="sticky" color="default" elevation={1}>
+      <AppBar
+        position="fixed"
+        elevation={0}
+        sx={{
+          background: "rgba(15,15,15,0.95)", // solid dark similar to hero
+          backdropFilter: "blur(10px)", // glassy effect
+          color: "#fff",
+        }}
+      >
         <Toolbar
           sx={{
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
             px: 2,
+            height: "64px",
           }}
         >
           <Typography
@@ -31,14 +40,13 @@ const NavBar = ({ user, onLogout }) => {
             to="/"
             sx={{
               textDecoration: "none",
-              color: "inherit",
+              color: "#fff",
               fontWeight: "bold",
             }}
           >
-            Capstone II
+            Home
           </Typography>
 
-          {/* Links */}
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
             {user ? (
               <>
@@ -48,20 +56,12 @@ const NavBar = ({ user, onLogout }) => {
                 <Button component={RouterLink} to="/Group" color="inherit">
                   My Groups
                 </Button>
-
                 <Button component={RouterLink} to="/assign" color="inherit">
                   Assign
                 </Button>
                 <Button component={RouterLink} to="/dashboard" color="inherit">
                   Dashboard
                 </Button>
-                <Typography
-                  variant="body1"
-                  sx={{ color: "text.secondary", ml: 2, mr: 1 }}
-                >
-                  Welcome, {user.username}!
-                </Typography>
-
                 <Button
                   onClick={handleLogout}
                   variant="contained"
@@ -85,10 +85,9 @@ const NavBar = ({ user, onLogout }) => {
         </Toolbar>
       </AppBar>
 
-      {/* This Toolbar adds space below the sticky AppBar */}
-      <Toolbar />
+      {/* Offset for fixed AppBar */}
+      <Toolbar sx={{ minHeight: "64px" }} />
 
-      {/* This renders the nested routes */}
       <Outlet />
     </>
   );
