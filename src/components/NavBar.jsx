@@ -16,13 +16,14 @@ const NavBar = ({ user, onLogout }) => {
 
   return (
     <>
-      <AppBar position="sticky" color="default" elevation={1}>
+      <AppBar position="fixed" color="default" elevation={1}>
         <Toolbar
           sx={{
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
             px: 2,
+            height: "64px", // define navbar height
           }}
         >
           <Typography
@@ -35,35 +36,24 @@ const NavBar = ({ user, onLogout }) => {
               fontWeight: "bold",
             }}
           >
-            Capstone II
+            Home
           </Typography>
 
-        {/* Links */}
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-          {user ? (
-            <>
-              <Button component={RouterLink} to="/upload/1" color="inherit">
-                OCR Tool
-              </Button>
-              <Button component={RouterLink} to="/Group" color="inherit">
-                My Groups
-              </Button>
-              <Button component={RouterLink} to="/user-search" color="inherit">
-                User Search
-              </Button>
-              <Button component={RouterLink} to="/assign" color="inherit">
-                Assign
-              </Button>
-              <Button component={RouterLink} to="/dashboard" color="inherit">
-                Dashboard
-              </Button>
-              <Typography
-                variant="body1"
-                sx={{ color: "text.secondary", ml: 2, mr: 1 }}
-              >
-                Welcome, {user.username}!
-              </Typography>
-
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+            {user ? (
+              <>
+                <Button component={RouterLink} to="/upload/1" color="inherit">
+                  OCR Tool
+                </Button>
+                <Button component={RouterLink} to="/Group" color="inherit">
+                  My Groups
+                </Button>
+                <Button component={RouterLink} to="/assign" color="inherit">
+                  Assign
+                </Button>
+                <Button component={RouterLink} to="/dashboard" color="inherit">
+                  Dashboard
+                </Button>
                 <Button
                   onClick={handleLogout}
                   variant="contained"
@@ -87,10 +77,10 @@ const NavBar = ({ user, onLogout }) => {
         </Toolbar>
       </AppBar>
 
-      {/* This Toolbar adds space below the sticky AppBar */}
-      <Toolbar />
+      {/* Offset for fixed AppBar */}
+      <Toolbar sx={{ minHeight: "64px" }} />
 
-      {/* This renders the nested routes */}
+      {/* Nested routes */}
       <Outlet />
     </>
   );
