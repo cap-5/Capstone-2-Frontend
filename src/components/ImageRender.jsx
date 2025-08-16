@@ -121,11 +121,10 @@ function OcrComponent() {
     setReceiptItems(enriched);
   }, [parsedItems]);
 
- 
   const handleImageUpload = (e) => {
     if (e.target.files[0]) {
       setImageFile(e.target.files[0]); // Save the uploaded file in state
-      setOcrResult("Recognizing..."); 
+      setOcrResult("Recognizing...");
       setBackendTotal(null); // Clear any previous total value
     }
   };
@@ -191,95 +190,157 @@ function OcrComponent() {
   return (
     <Box
       sx={{
-        maxWidth: 600,
-        mx: "auto",
-        p: 3,
-        borderRadius: 2,
-        boxShadow: 3,
-        bgcolor: "background.paper",
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "linear-gradient(135deg, #1e1e2f, #3a3a5d)", // whole page
       }}
     >
-      <Typography variant="h4" mb={3} align="center">
-        Receipt OCR Uploader
-      </Typography>
+      <Box
+        sx={{
+          maxWidth: 600,
+          width: "100%",
+          mx: "auto",
+          p: 3,
+          borderRadius: 2,
+          boxShadow: 3,
+          background: "rgba(255, 255, 255, 0.1)", // semi-transparent card
+          backdropFilter: "blur(10px)", // frosted glass effect
+          color: "#fff", // white text for readability
+        }}
+      >
+        <Typography variant="h4" mb={3} align="center" sx={{ color: "white" }}>
+          Receipt OCR Uploader
+        </Typography>
 
-      <Button variant="contained" component="label" fullWidth>
-        Upload Image
-        <input
-          type="file"
-          accept="image/*"
-          hidden
-          onChange={handleImageUpload}
-        />
-      </Button>
-
-      <Typography variant="subtitle1" mt={3} mb={1}>
-        OCR Result (editable):
-      </Typography>
-
-      <TextField
-        multiline // Makes this TextField behave like a textarea (multi-line input)
-        minRows={6}
-        fullWidth
-        variant="outlined" // Gives the input a visible border outline (MUI style)
-        value={editedBody} // Controlled component: the displayed text is from the React state 'editedBody'
-        onChange={(e) => setEditedBody(e.target.value)}
-        /* onChange handler updates 'editedBody' state as user types,
-     making this TextField editable by syncing the input's value with state */
-      />
-      <FormControl fullWidth sx={{ mt: 3 }}>
-        <InputLabel id="category-label">Category</InputLabel>
-
-        <Select
-          labelId="category-label"
-          value={isOther ? "Other" : category}
-          label="Category"
-          onChange={handleCategoryChange}
+        <Button
+          variant="contained"
+          component="label"
+          fullWidth
+          sx={{
+            bgcolor: "rgba(255,255,255,0.15)",
+            color: "white",
+            "&:hover": { bgcolor: "rgba(255,255,255,0.25)" },
+          }}
         >
-          <MenuItem value="" disabled>
-            Select a category
-          </MenuItem>
+          Upload Image
+          <input
+            type="file"
+            accept="image/*"
+            hidden
+            onChange={handleImageUpload}
+          />
+        </Button>
 
-          {/* Map through predefined categories to create selectable options */}
-          {predefinedCategories.map((cat) => (
-            <MenuItem key={cat} value={cat}>
-              {cat}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
+        <Typography
+          variant="subtitle1"
+          mt={3}
+          mb={1}
+          sx={{ color: "rgba(255,255,255,0.8)" }}
+        >
+          OCR Result (editable):
+        </Typography>
 
-      {isOther && (
         <TextField
+          multiline
+          minRows={6}
           fullWidth
           variant="outlined"
-          placeholder="Enter custom category"
-          value={customCategory}
-          onChange={handleCustomCategoryChange}
-          sx={{ mt: 2 }}
+          value={editedBody}
+          onChange={(e) => setEditedBody(e.target.value)}
+          InputProps={{
+            style: { color: "white" },
+          }}
+          sx={{
+            "& .MuiOutlinedInput-root": {
+              "& fieldset": { borderColor: "rgba(255,255,255,0.3)" },
+              "&:hover fieldset": { borderColor: "rgba(255,255,255,0.5)" },
+            },
+          }}
         />
-      )}
 
-      <Box mt={3}>
-        <EditItems items={receiptItems} setItems={setReceiptItems} />
+        <FormControl fullWidth sx={{ mt: 3 }}>
+          <InputLabel id="category-label" sx={{ color: "white" }}>
+            Category
+          </InputLabel>
+          <Select
+            labelId="category-label"
+            value={isOther ? "Other" : category}
+            label="Category"
+            onChange={handleCategoryChange}
+            sx={{
+              color: "white",
+              "& .MuiOutlinedInput-notchedOutline": {
+                borderColor: "rgba(255,255,255,0.3)",
+              },
+              "&:hover .MuiOutlinedInput-notchedOutline": {
+                borderColor: "rgba(255,255,255,0.5)",
+              },
+            }}
+            MenuProps={{
+              PaperProps: {
+                sx: {
+                  bgcolor: "#2a2a40",
+                  color: "white",
+                },
+              },
+            }}
+          >
+            <MenuItem value="" disabled>
+              Select a category
+            </MenuItem>
+            {predefinedCategories.map((cat) => (
+              <MenuItem key={cat} value={cat}>
+                {cat}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+
+        {isOther && (
+          <TextField
+            fullWidth
+            variant="outlined"
+            placeholder="Enter custom category"
+            value={customCategory}
+            onChange={handleCustomCategoryChange}
+            sx={{
+              mt: 2,
+              input: { color: "white" },
+              "& .MuiOutlinedInput-root": {
+                "& fieldset": { borderColor: "rgba(255,255,255,0.3)" },
+                "&:hover fieldset": { borderColor: "rgba(255,255,255,0.5)" },
+              },
+            }}
+          />
+        )}
+
+        <Box mt={3}>
+          <EditItems items={receiptItems} setItems={setReceiptItems} />
+        </Box>
+
+        {backendTotal !== null && (
+          <Typography variant="h6" mt={3} sx={{ color: "white" }}>
+            Total: ${backendTotal.toFixed(2)}
+          </Typography>
+        )}
+
+        <Button
+          variant="contained"
+          fullWidth
+          sx={{
+            mt: 3,
+            bgcolor: "#4cafef",
+            color: "white",
+            "&:hover": { bgcolor: "#42a5f5" },
+          }}
+          onClick={sendToBackend}
+          disabled={isSaving || !receiptItems.length}
+        >
+          {isSaving ? "Saving..." : "Save to Database"}
+        </Button>
       </Box>
-
-      {backendTotal !== null && (
-        <Typography variant="h6" mt={3}>
-          Total: ${backendTotal.toFixed(2)}
-        </Typography>
-      )}
-
-      <Button
-        variant="contained"
-        color="primary"
-        fullWidth
-        sx={{ mt: 3 }}
-        onClick={sendToBackend}
-        disabled={isSaving || !receiptItems.length}
-      >
-        {isSaving ? "Saving..." : "Save to Database"}
-      </Button>
     </Box>
   );
 }

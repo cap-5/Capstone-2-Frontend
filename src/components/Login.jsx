@@ -65,7 +65,7 @@ const Login = ({ setUser }) => {
     <Box
       sx={{
         minHeight: "100vh",
-        width: "100vw",
+        width: "100%",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -75,6 +75,7 @@ const Login = ({ setUser }) => {
           "linear-gradient(270deg, #001f3f, #0074D9, #7FDBFF, #001f3f)",
         backgroundSize: "1200% 1200%",
         animation: "moveGradient 30s linear infinite",
+        boxSizing: "border-box", // ✅ include padding in height
       }}
     >
       <Box

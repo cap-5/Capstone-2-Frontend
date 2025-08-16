@@ -16,14 +16,22 @@ const NavBar = ({ user, onLogout }) => {
 
   return (
     <>
-      <AppBar position="fixed" color="default" elevation={1}>
+      <AppBar
+        position="fixed"
+        elevation={0}
+        sx={{
+          background: "rgba(15,15,15,0.95)", // solid dark similar to hero
+          backdropFilter: "blur(10px)", // glassy effect
+          color: "#fff",
+        }}
+      >
         <Toolbar
           sx={{
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
             px: 2,
-            height: "64px", // define navbar height
+            height: "64px",
           }}
         >
           <Typography
@@ -32,7 +40,7 @@ const NavBar = ({ user, onLogout }) => {
             to="/"
             sx={{
               textDecoration: "none",
-              color: "inherit",
+              color: "#fff",
               fontWeight: "bold",
             }}
           >
@@ -80,7 +88,6 @@ const NavBar = ({ user, onLogout }) => {
       {/* Offset for fixed AppBar */}
       <Toolbar sx={{ minHeight: "64px" }} />
 
-      {/* Nested routes */}
       <Outlet />
     </>
   );
