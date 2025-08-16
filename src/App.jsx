@@ -21,7 +21,6 @@ import AssignItems from "./components/AssignItems";
 import Notifications from "./components/myNotifications";
 import UserReceipts from "./components/UserReceipts";
 import GroupReceipts from "./components/GroupReceipts";
-import Dash from "./components/test";
 import { Auth0Provider } from "@auth0/auth0-react";
 import { auth0Config } from "./auth0-config";
 
@@ -93,7 +92,6 @@ const App = () => {
           <Route path="/dashboard" element={<Dashboard />}>
             <Route path="profile" element={<DisplayUserInfo />} />
             <Route path="notifications" element={<Notifications />} />
-            <Route path="Dash" element={<Dash />} />
           </Route>
         </Routes>
       </div>
