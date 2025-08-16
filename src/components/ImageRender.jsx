@@ -186,7 +186,6 @@ function OcrComponent() {
       setIsSaving(false);
     }
   };
-
   return (
     <Box
       sx={{
@@ -194,36 +193,26 @@ function OcrComponent() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background: "linear-gradient(135deg, #1e1e2f, #3a3a5d)", // whole page
+        backgroundColor: "#fff", // simple white background
       }}
     >
       <Box
         sx={{
           maxWidth: 600,
           width: "100%",
-          mx: "auto",
+          mx: 2,
           p: 3,
           borderRadius: 2,
           boxShadow: 3,
-          background: "rgba(255, 255, 255, 0.1)", // semi-transparent card
-          backdropFilter: "blur(10px)", // frosted glass effect
-          color: "#fff", // white text for readability
+          bgcolor: "background.paper", // default MUI card color
+          color: "text.primary",
         }}
       >
-        <Typography variant="h4" mb={3} align="center" sx={{ color: "white" }}>
+        <Typography variant="h4" mb={3} align="center">
           Receipt OCR Uploader
         </Typography>
 
-        <Button
-          variant="contained"
-          component="label"
-          fullWidth
-          sx={{
-            bgcolor: "rgba(255,255,255,0.15)",
-            color: "white",
-            "&:hover": { bgcolor: "rgba(255,255,255,0.25)" },
-          }}
-        >
+        <Button variant="contained" component="label" fullWidth>
           Upload Image
           <input
             type="file"
@@ -233,12 +222,7 @@ function OcrComponent() {
           />
         </Button>
 
-        <Typography
-          variant="subtitle1"
-          mt={3}
-          mb={1}
-          sx={{ color: "rgba(255,255,255,0.8)" }}
-        >
+        <Typography variant="subtitle1" mt={3} mb={1}>
           OCR Result (editable):
         </Typography>
 
@@ -249,43 +233,15 @@ function OcrComponent() {
           variant="outlined"
           value={editedBody}
           onChange={(e) => setEditedBody(e.target.value)}
-          InputProps={{
-            style: { color: "white" },
-          }}
-          sx={{
-            "& .MuiOutlinedInput-root": {
-              "& fieldset": { borderColor: "rgba(255,255,255,0.3)" },
-              "&:hover fieldset": { borderColor: "rgba(255,255,255,0.5)" },
-            },
-          }}
         />
 
         <FormControl fullWidth sx={{ mt: 3 }}>
-          <InputLabel id="category-label" sx={{ color: "white" }}>
-            Category
-          </InputLabel>
+          <InputLabel id="category-label">Category</InputLabel>
           <Select
             labelId="category-label"
             value={isOther ? "Other" : category}
             label="Category"
             onChange={handleCategoryChange}
-            sx={{
-              color: "white",
-              "& .MuiOutlinedInput-notchedOutline": {
-                borderColor: "rgba(255,255,255,0.3)",
-              },
-              "&:hover .MuiOutlinedInput-notchedOutline": {
-                borderColor: "rgba(255,255,255,0.5)",
-              },
-            }}
-            MenuProps={{
-              PaperProps: {
-                sx: {
-                  bgcolor: "#2a2a40",
-                  color: "white",
-                },
-              },
-            }}
           >
             <MenuItem value="" disabled>
               Select a category
@@ -305,14 +261,7 @@ function OcrComponent() {
             placeholder="Enter custom category"
             value={customCategory}
             onChange={handleCustomCategoryChange}
-            sx={{
-              mt: 2,
-              input: { color: "white" },
-              "& .MuiOutlinedInput-root": {
-                "& fieldset": { borderColor: "rgba(255,255,255,0.3)" },
-                "&:hover fieldset": { borderColor: "rgba(255,255,255,0.5)" },
-              },
-            }}
+            sx={{ mt: 2 }}
           />
         )}
 
@@ -321,7 +270,7 @@ function OcrComponent() {
         </Box>
 
         {backendTotal !== null && (
-          <Typography variant="h6" mt={3} sx={{ color: "white" }}>
+          <Typography variant="h6" mt={3}>
             Total: ${backendTotal.toFixed(2)}
           </Typography>
         )}
@@ -329,12 +278,7 @@ function OcrComponent() {
         <Button
           variant="contained"
           fullWidth
-          sx={{
-            mt: 3,
-            bgcolor: "#4cafef",
-            color: "white",
-            "&:hover": { bgcolor: "#42a5f5" },
-          }}
+          sx={{ mt: 3 }}
           onClick={sendToBackend}
           disabled={isSaving || !receiptItems.length}
         >

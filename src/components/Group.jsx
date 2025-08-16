@@ -111,6 +111,7 @@ function Groups() {
       });
       toast.success("Group deleted successfully!");
 
+      console.log(res.data);
       setGroups((prev) => prev.filter((g) => g.id !== groupId));
     } catch (err) {
       console.error("Delete group error", err);
