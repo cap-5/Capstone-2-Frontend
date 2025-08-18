@@ -57,9 +57,6 @@ const NavBar = ({ user, onLogout }) => {
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
             {user ? (
               <>
-                <Button component={RouterLink} to="/upload/1" color="inherit">
-                  OCR Tool
-                </Button>
                 <Button component={RouterLink} to="/Group" color="inherit">
                   My Groups
                 </Button>
