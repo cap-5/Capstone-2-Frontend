@@ -178,7 +178,7 @@ function OcrComponent() {
       );
 
       alert("Receipt saved!");
-      navigate(`/groups/${groupId}`); // go back to group detail
+      navigate(`/groups/${groupId}`); // Good feature maybe?
 
       // Get totalPay directly from saved receipt response
       const savedReceipt = res.data.receipt;
