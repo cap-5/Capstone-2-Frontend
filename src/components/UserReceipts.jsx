@@ -9,9 +9,12 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import { Container } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
 const UserReceipts = () => {
   const [userReceipts, setUserReceipts] = useState([]);
+  const navigate = useNavigate();
+  const getGroupId = (r) => r.Group_Id ?? r.groupId ?? r.GroupId;
 
   const fetchUserReceipts = async () => {
     try {
@@ -73,28 +76,44 @@ const UserReceipts = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {userReceipts.map((receipt) => (
-              <TableRow
-                key={receipt.id}
-                sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-              >
-                <TableCell component="th" scope="row">
-                  {receipt.title}
-                </TableCell>
-                <TableCell align="right">
-                  {receipt.body.substring(0, 50)}
-                </TableCell>
-                <TableCell align="right">
-                  {receipt.category ? receipt.category : "No category provided"}
-                </TableCell>
-                <TableCell align="right">
-                  ${receipt.totalPay ? receipt.totalPay : 0}
-                </TableCell>
-                <TableCell align="right">
-                  {receipt.createdAt.substring(0, 10)}
-                </TableCell>
-              </TableRow>
-            ))}
+            {userReceipts.map((receipt) => {
+          const groupId = getGroupId(receipt);
+          return (
+            <TableRow
+              key={receipt.id}
+              onClick={() => navigate(`/assign/${groupId}/${receipt.id}`)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  navigate(`/assign/${groupId}/${receipt.id}`);
+                }
+              }}
+              role="button"
+              tabIndex={0}
+              sx={{
+                "&:last-child td, &:last-child th": { border: 0 },
+                cursor: "pointer",
+                "&:hover": { backgroundColor: "action.hover" },
+              }}
+            >
+              <TableCell component="th" scope="row">
+                {receipt.title}
+              </TableCell>
+              <TableCell align="right">
+                {receipt.body?.substring(0, 50)}
+              </TableCell>
+              <TableCell align="right">
+                {receipt.category ? receipt.category : "No category provided"}
+              </TableCell>
+              <TableCell align="right">
+                ${receipt.totalPay ? receipt.totalPay : 0}
+              </TableCell>
+              <TableCell align="right">
+                {receipt.createdAt?.substring(0, 10)}
+              </TableCell>
+            </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </TableContainer>
