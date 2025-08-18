@@ -7,11 +7,12 @@ import ListItem from "@mui/material/ListItem";
 import ListItemText from "@mui/material/ListItemText";
 import Typography from "@mui/material/Typography";
 
-const drawerWidth = 240;
 
-const navBarHeight = 64; // typical MUI AppBar height
+const drawerWidth = 240;
+const navBarHeight = 64;
 
 const Dashboard = () => {
+
   return (
     <Box sx={{ display: "flex", height: `calc(100vh - ${navBarHeight}px)` }}>
       {/* Sidebar */}
@@ -23,26 +24,25 @@ const Dashboard = () => {
           [`& .MuiDrawer-paper`]: {
             width: drawerWidth,
             boxSizing: "border-box",
-            top: `${navBarHeight}px`, // <-- offset Drawer down by NavBar height
-            height: `calc(100vh - ${navBarHeight}px)`, // make Drawer height fit below NavBar
+            top: `${navBarHeight}px`,
+            height: `calc(100vh - ${navBarHeight}px)`,
           },
         }}
       >
-        {/* You can remove this Toolbar inside Drawer now since drawer is offset */}
         <Box
           sx={{
             overflow: "auto",
             height: "100%",
             background: `linear-gradient(
-      270deg,
-      rgba(102, 126, 234, 0.5),
-      rgba(118, 75, 162, 0.5),
-      rgba(107, 141, 214, 0.5),
-      rgba(118, 75, 162, 0.5)
-    )`,
+              270deg,
+              rgba(102, 126, 234, 0.5),
+              rgba(118, 75, 162, 0.5),
+              rgba(107, 141, 214, 0.5),
+              rgba(118, 75, 162, 0.5)
+            )`,
             backgroundSize: "800% 800%",
             animation: "gradientShift 15s ease infinite",
-            backdropFilter: "blur(6px)", // optional: nice blur effect behind sidebar
+            backdropFilter: "blur(6px)",
           }}
         >
           <Typography variant="h6" sx={{ color: "white", p: 2 }}>
@@ -55,7 +55,18 @@ const Dashboard = () => {
             <ListItem button component={Link} to="notifications">
               <ListItemText primary="Group Invites" sx={{ color: "white" }} />
             </ListItem>
-            {/* Add more items */}
+            <ListItem button component={Link} to="userReceipts">
+              <ListItemText
+                primary="My Upload Receipts"
+                sx={{ color: "white" }}
+              />
+            </ListItem>
+
+            <ListItem button component={Link} to="payments">
+              <ListItemText primary="My Payments" sx={{ color: "white" }} />
+            </ListItem>
+
+            
           </List>
         </Box>
       </Drawer>
@@ -68,7 +79,7 @@ const Dashboard = () => {
           bgcolor: "background.default",
           p: 3,
           overflowY: "auto",
-          marginTop: `${navBarHeight}px`, // offset main content too
+          marginTop: `${navBarHeight}px`,
           height: `calc(100vh - ${navBarHeight}px)`,
         }}
       >
