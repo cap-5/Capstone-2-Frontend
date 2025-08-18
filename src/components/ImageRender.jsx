@@ -27,7 +27,7 @@ function OcrComponent() {
   const [isOther, setIsOther] = useState(false);
   const [backendTotal, setBackendTotal] = useState(null);
 
-  const groupId = 3; // Hardcoded for now
+  const groupId = 12; // Hardcoded for now
 
   const predefinedCategories = [
     "Entertainment",
