@@ -5,13 +5,20 @@ import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
+import axios from "axios";
+import { API_URL } from "../shared";
 
 const NavBar = ({ user, onLogout }) => {
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    onLogout();
-    navigate("/");
+  const handleLogout = async () => {
+    try {
+      await axios.post(`${API_URL}/auth/logout`, {}, { withCredentials: true });
+      onLogout(); // call the prop function to clear user state
+      navigate("/");
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
   };
 
   return (

@@ -21,76 +21,82 @@ const Signup = ({ setUser }) => {
     username: "",
     password: "",
     confirmPassword: "",
-    email: "",
+    paypalEmail: "",
     profilePic: "",
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
+  // Form validation
   const validateForm = () => {
     const newErrors = {};
-    if (!formData.firstName) newErrors.firstName = "First name is required";
-    if (!formData.lastName) newErrors.lastName = "Last name is required";
-    if (!formData.username) newErrors.username = "Username is required";
+
+    if (!formData.firstName.trim()) newErrors.firstName = "First name is required";
+    if (!formData.lastName.trim()) newErrors.lastName = "Last name is required";
+    if (!formData.username.trim()) newErrors.username = "Username is required";
     else if (formData.username.length < 3 || formData.username.length > 20)
       newErrors.username = "Username must be 3-20 characters";
     if (!formData.password) newErrors.password = "Password is required";
     else if (formData.password.length < 6)
       newErrors.password = "Password must be at least 6 characters";
     if (!formData.confirmPassword)
-      newErrors.confirmPassword = "Pleaase confirm your password";
+      newErrors.confirmPassword = "Please confirm your password";
     else if (formData.password !== formData.confirmPassword)
       newErrors.confirmPassword = "Passwords do not match";
-    if (!formData.email) newErrors.email = "Email is required";
-    else if (!/\S+@\S+\.\S+/.test(formData.email))
-      newErrors.email = "Invalid email";
+
+    if (!formData.paypalEmail.trim()) newErrors.paypalEmail = "PayPal email is required";
+    else if (!/\S+@\S+\.\S+/.test(formData.paypalEmail))
+      newErrors.paypalEmail = "Invalid email";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!validateForm()) return;
-
-    setIsLoading(true);
-    try {
-      const response = await axios.post(
-        `${API_URL}/auth/signup`,
-        {
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          username: formData.username,
-          password: formData.password,
-          email: formData.email,
-        },
-        { withCredentials: true }
-      );
-
-      setUser(response.data.user);
-      navigate("/");
-    } catch (error) {
-      setErrors({
-        general:
-          error.response?.data?.error || "An error occurred during signup",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
+  // Handle input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
+  // Submit handler
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+  if (!validateForm()) return;
+
+  setIsLoading(true);
+  try {
+    const response = await axios.post(
+      `${API_URL}/auth/signup`,
+      {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        username: formData.username,
+        password: formData.password,
+        paypalEmail: formData.paypalEmail,
+        profilePic: formData.profilePic || null, 
+      },
+      { withCredentials: true }
+    );
+
+    setUser(response.data.user);
+    navigate("/");
+  } catch (error) {
+    setErrors({
+      general:
+        error.response?.data?.error || "An error occurred during signup",
+    });
+  } finally {
+    setIsLoading(false);
+  }
+};
+
   return (
     <Box
       sx={{
         minHeight: "100vh",
-        width: "100%", // use 100% instead of 100vw
+        width: "100%",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -100,7 +106,7 @@ const Signup = ({ setUser }) => {
           "linear-gradient(270deg, #001f3f, #0074D9, #7FDBFF, #001f3f)",
         backgroundSize: "1200% 1200%",
         animation: "moveGradient 30s linear infinite",
-        boxSizing: "border-box", // ensures padding doesn't add to width
+        boxSizing: "border-box",
       }}
     >
       <Box
@@ -199,13 +205,13 @@ const Signup = ({ setUser }) => {
         />
 
         <TextField
-          label="Email"
-          name="email"
+          label="PayPal Email"
+          name="paypalEmail"
           type="email"
-          value={formData.email}
+          value={formData.paypalEmail}
           onChange={handleChange}
-          error={!!errors.email}
-          helperText={errors.email}
+          error={!!errors.paypalEmail}
+          helperText={errors.paypalEmail}
           variant="filled"
           fullWidth
           InputProps={{ sx: { color: "white" } }}
@@ -223,7 +229,6 @@ const Signup = ({ setUser }) => {
           InputLabelProps={{ sx: { color: "white" } }}
         />
 
-        {/* Regular Sign Up Button */}
         <Button
           type="submit"
           variant="contained"
@@ -231,14 +236,9 @@ const Signup = ({ setUser }) => {
           disabled={isLoading}
           sx={{ py: 1.5, mt: 1 }}
         >
-          {isLoading ? (
-            <CircularProgress size={24} color="inherit" />
-          ) : (
-            "Sign Up"
-          )}
+          {isLoading ? <CircularProgress size={24} color="inherit" /> : "Sign Up"}
         </Button>
 
-        {/* Google Sign Up / Login Button */}
         <Button
           variant="outlined"
           startIcon={<GoogleIcon />}

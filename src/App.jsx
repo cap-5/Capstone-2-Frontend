@@ -23,6 +23,8 @@ import UserReceipts from "./components/UserReceipts";
 import GroupReceipts from "./components/GroupReceipts";
 import { Auth0Provider } from "@auth0/auth0-react";
 import { auth0Config } from "./auth0-config";
+import DashboardPayments from "./components/DashboardPayments";
+import PaymentComplete from "./components/paymentCompleted";
 
 const socket = io(SOCKETS_URL, {
   withCredentials: NODE_ENV === "production",
@@ -32,9 +34,7 @@ const App = () => {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    socket.on("connect", () => {
-      console.log("🔗 Connected to socket");
-    });
+    socket.on("connect", () => console.log("🔗 Connected to socket"));
   }, []);
 
   const checkAuth = async () => {
@@ -44,26 +44,17 @@ const App = () => {
       });
       setUser(response.data.user);
     } catch {
-      console.log("Not authenticated");
       setUser(null);
     }
   };
 
-  // Check authentication status on app load
   useEffect(() => {
     checkAuth();
   }, []);
 
   const handleLogout = async () => {
     try {
-      // Logout from our backend
-      await axios.post(
-        `${API_URL}/auth/logout`,
-        {},
-        {
-          withCredentials: true,
-        }
-      );
+      await axios.post(`${API_URL}/auth/logout`, {}, { withCredentials: true });
       setUser(null);
     } catch (error) {
       console.error("Logout error:", error);
@@ -86,12 +77,14 @@ const App = () => {
           <Route path="/user-search" element={<UserSearch />} />
           <Route path="/assign/:groupId/:receiptId" element={<AssignItems />} />
           <Route path="/group/:id/user-search" element={<UserSearch />} />
-          <Route path="/UserReceipts/:userId" element={<UserReceipts />} />
           <Route path="/GroupReceipts/:groupId" element={<GroupReceipts />} />
-          {/* nested navbar layout */}
+          <Route path="/payments/complete" element={<PaymentComplete />} />
+          {/* Dashboard nested routes */}
           <Route path="/dashboard" element={<Dashboard />}>
             <Route path="profile" element={<DisplayUserInfo />} />
             <Route path="notifications" element={<Notifications />} />
+            <Route path="userReceipts" element={<UserReceipts />} />
+            <Route path="payments" element={<DashboardPayments />} />
           </Route>
         </Routes>
       </div>
@@ -99,15 +92,13 @@ const App = () => {
   );
 };
 
-const Root = () => {
-  return (
-    <Auth0Provider {...auth0Config}>
-      <Router>
-        <App />
-      </Router>
-    </Auth0Provider>
-  );
-};
+const Root = () => (
+  <Auth0Provider {...auth0Config}>
+    <Router>
+      <App />
+    </Router>
+  </Auth0Provider>
+);
 
 const root = createRoot(document.getElementById("root"));
 root.render(<Root />);
