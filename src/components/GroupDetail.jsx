@@ -2,9 +2,13 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { API_URL } from "../shared";
 import { useParams, useNavigate } from "react-router-dom"; 
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import PersonRemoveIcon from "@mui/icons-material/PersonRemove";
 import PersonAddAltIcon from "@mui/icons-material/PersonAddAlt";
 import IconButton from "@mui/material/IconButton";
+import DocumentScannerIcon from "@mui/icons-material/DocumentScanner";
+import { Stack } from "@mui/material";
 
 import { // Modify this later, could look nicer but this is good for now //
   Box,
@@ -17,13 +21,13 @@ import { // Modify this later, could look nicer but this is good for now //
   ListItemText,
   Divider,
   CircularProgress,
-  Stack,
 } from "@mui/material";
 
 function GroupDetail () {
   const { id } = useParams(); 
   const navigate = useNavigate(); 
   const [members, setMembers] = useState([]);
+  const [leaving, setLeaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
 
@@ -54,6 +58,26 @@ function GroupDetail () {
     }
   };
 
+  // Change notification so it shows you cannot leave during that page.
+  const handleLeave = async () => {
+    const ok = window.confirm("Leave this group?");
+    if (!ok) return;
+  
+    try {
+      setLeaving(true);
+      await axios.post(`${API_URL}/api/group/${id}/leave`, {},
+      { withCredentials: true });
+      toast ? toast.success("You left the group") : alert("You left the group");
+      navigate("/group");
+    } catch (e) {
+      const msg = e?.response?.data?.error || "Failed to leave group.";
+      toast ? toast.error(msg) : alert(msg);
+    } finally {
+      setLeaving(false);
+    }
+  };
+    
+  
   useEffect(() => {
     fetchMembers();
   }, [id]);
@@ -73,6 +97,17 @@ function GroupDetail () {
       </Box>
     );
   }
+
+  <ToastContainer
+  position="top-center"
+  autoClose={3000}
+  hideProgressBar={false}
+  newestOnTop={false}
+  closeOnClick
+  pauseOnFocusLoss
+  draggable
+  pauseOnHover
+/>
 
   return (
     <Box sx={{ maxWidth: 720, mx: "auto", px: 2, py: 3 }}>
@@ -104,16 +139,36 @@ function GroupDetail () {
           ))
         )}
       </List>
-
-      {/* Add members button */}
+     
+      {/* Add members + Leave group buttons */}
       <Box sx={{ mt: 2, display: "flex", justifyContent: "flex-end" }}>
-        <Button
-          startIcon={<PersonAddAltIcon />}
-          variant="contained"
-          onClick={() => navigate(`/group/${id}/user-search`)}
-        >
-          Add members
-        </Button>
+        <Stack direction="row" spacing={1}>
+          <Button
+            startIcon={<DocumentScannerIcon />}
+            variant="outlined"
+            onClick={() => navigate(`/upload/${id}`)}
+          >
+            Scan receipt
+          </Button>
+          
+          
+          <Button
+            startIcon={<PersonAddAltIcon />}
+            variant="contained"
+            onClick={() => navigate(`/group/${id}/user-search`)} 
+          >
+            Add members
+          </Button>
+
+          <Button
+            variant="outlined"
+            color="error"
+            onClick={handleLeave}
+            disabled={leaving}
+          >
+            {leaving ? "Leaving..." : "Leave group"}
+          </Button>
+        </Stack>
       </Box>
     </Box>
   );

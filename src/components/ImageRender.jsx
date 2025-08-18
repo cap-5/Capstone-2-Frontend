@@ -3,6 +3,7 @@ import { createWorker } from "tesseract.js";
 import axios from "axios";
 import EditItems from "./EditItems";
 import { API_URL } from "../shared";
+import { useParams, useNavigate } from "react-router-dom";
 
 // MUI imports for UI components and styling
 import {
@@ -17,6 +18,8 @@ import {
 } from "@mui/material";
 
 function OcrComponent() {
+  const { groupId } = useParams();
+  const navigate = useNavigate();
   const [ocrResult, setOcrResult] = useState("");
   const [editedBody, setEditedBody] = useState(""); // Editable OCR text
   const [imageFile, setImageFile] = useState(null);
@@ -27,7 +30,7 @@ function OcrComponent() {
   const [isOther, setIsOther] = useState(false);
   const [backendTotal, setBackendTotal] = useState(null);
 
-  const groupId = 3; // Hardcoded for now
+  // const groupId = 3; // Hardcoded for now
 
   const predefinedCategories = [
     "Entertainment",
@@ -175,6 +178,7 @@ function OcrComponent() {
       );
 
       alert("Receipt saved!");
+      navigate(`/groups/${groupId}`); // go back to group detail
 
       // Get totalPay directly from saved receipt response
       const savedReceipt = res.data.receipt;
