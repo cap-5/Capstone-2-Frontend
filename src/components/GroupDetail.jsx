@@ -249,22 +249,30 @@ function GroupDetailPage() {
                     </TableCell>
                   </TableRow>
                 </TableHead>
-                <TableBody>
+                  <TableBody>
                   {receipts.map((receipt) => (
-                    <TableRow key={receipt.id}>
+                    <TableRow
+                      key={receipt.id}
+                      onClick={() => navigate(`/assign/${id}/${receipt.id}`)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          navigate(`/assign/${id}/${receipt.id}`);
+                        }
+                      }}
+                      role="button"
+                      tabIndex={0}
+                      sx={{
+                        "&:last-child td, &:last-child th": { border: 0 },
+                        cursor: "pointer",
+                        "&:hover": { backgroundColor: "action.hover" },
+                      }}
+                    >
                       <TableCell>{receipt.title}</TableCell>
-                      <TableCell align="right">
-                        {receipt.body?.substring(0, 50)}
-                      </TableCell>
-                      <TableCell align="right">
-                        {receipt.category || "No category"}
-                      </TableCell>
-                      <TableCell align="right">
-                        ${receipt.totalPay || 0}
-                      </TableCell>
-                      <TableCell align="right">
-                        {receipt.createdAt?.substring(0, 10)}
-                      </TableCell>
+                      <TableCell align="right">{receipt.body?.substring(0, 50)}</TableCell>
+                      <TableCell align="right">{receipt.category || "No category"}</TableCell>
+                      <TableCell align="right">${receipt.totalPay || 0}</TableCell>
+                      <TableCell align="right">{receipt.createdAt?.substring(0, 10)}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

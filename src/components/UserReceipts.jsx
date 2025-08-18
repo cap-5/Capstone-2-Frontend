@@ -77,44 +77,43 @@ const UserReceipts = () => {
           </TableHead>
           <TableBody>
             {userReceipts.map((receipt) => {
-  const groupId = getGroupId(receipt);
-  return (
-    <TableRow
-      key={receipt.id}
-      onClick={() => navigate(`/assign/${groupId}/${receipt.id}`)}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          navigate(`/assign/${groupId}/${receipt.id}`);
-        }
-      }}
-      role="button"
-      tabIndex={0}
-      sx={{
-        "&:last-child td, &:last-child th": { border: 0 },
-        cursor: "pointer",
-        "&:hover": { backgroundColor: "action.hover" },
-      }}
-    >
-      <TableCell component="th" scope="row">
-        {receipt.title}
-      </TableCell>
-      <TableCell align="right">
-        {receipt.body?.substring(0, 50)}
-      </TableCell>
-      <TableCell align="right">
-        {receipt.category ? receipt.category : "No category provided"}
-      </TableCell>
-      <TableCell align="right">
-        ${receipt.totalPay ? receipt.totalPay : 0}
-      </TableCell>
-      <TableCell align="right">
-        {receipt.createdAt?.substring(0, 10)}
-      </TableCell>
-    </TableRow>
-  );
-})}
-
+          const groupId = getGroupId(receipt);
+          return (
+            <TableRow
+              key={receipt.id}
+              onClick={() => navigate(`/assign/${groupId}/${receipt.id}`)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  navigate(`/assign/${groupId}/${receipt.id}`);
+                }
+              }}
+              role="button"
+              tabIndex={0}
+              sx={{
+                "&:last-child td, &:last-child th": { border: 0 },
+                cursor: "pointer",
+                "&:hover": { backgroundColor: "action.hover" },
+              }}
+            >
+              <TableCell component="th" scope="row">
+                {receipt.title}
+              </TableCell>
+              <TableCell align="right">
+                {receipt.body?.substring(0, 50)}
+              </TableCell>
+              <TableCell align="right">
+                {receipt.category ? receipt.category : "No category provided"}
+              </TableCell>
+              <TableCell align="right">
+                ${receipt.totalPay ? receipt.totalPay : 0}
+              </TableCell>
+              <TableCell align="right">
+                {receipt.createdAt?.substring(0, 10)}
+              </TableCell>
+            </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </TableContainer>
