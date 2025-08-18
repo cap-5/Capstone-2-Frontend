@@ -12,25 +12,44 @@ import Paper from "@mui/material/Paper";
 import { Container } from "@mui/material";
 
 const GetGroupReceipts = () => {
+  const [groupName, setGroupName] = useState("");
   const [groupRecpits, setGroupRecpits] = useState([]);
-  const {groupId} = useParams();
+  const { groupId } = useParams();
   console.log("groupId:", groupId);
 
   const fetchGroupRecpits = async () => {
     try {
-      const res = await axios.get(
+      const groupReceiptsRes = await axios.get(
         `${API_URL}/api/group/GroupReceipts/${groupId}`
       );
-      console.log(res.data);
-      setGroupRecpits(res.data);
+      console.log("GROUP RECEIPTS RESPONSE: ", groupReceiptsRes);
+      setGroupRecpits(groupReceiptsRes.data);
+      // setGroupName(groupNameRes.data.groupName);
     } catch (err) {
       console.error("no group recpits", err);
     }
   };
+
+  const fetchGroupName = async () => {
+    try {
+      const groupNameRes = await axios.get(
+        `${API_URL}/api/group/myGroups/${groupId}`
+      );
+      console.log("GROUP NAME RESPONSE: ", groupNameRes);
+      setGroupName(groupNameRes.data.groupName);
+    } catch (err) {
+      console.error("EROR: ", err);
+      console.log("Failed to fetch group's name.");
+    }
+  };
+
   useEffect(() => {
     fetchGroupRecpits();
+    fetchGroupName();
   }, []);
+
   console.log("Fetching group receipts", groupRecpits);
+  console.log("GROUP NAME: ", groupName);
   // return (
   //   <div>
   //     <ul>
@@ -43,15 +62,24 @@ const GetGroupReceipts = () => {
 
   return (
     <Container maxWidth="md">
+      <h1>Receipt History for {groupName}</h1>
       <TableContainer component={Paper}>
         <Table sx={{ minWidth: 650 }}>
           <TableHead>
             <TableRow>
-              <TableCell sx={{ fontWeight: 'bold'}}>Title</TableCell>
-              <TableCell align="right" sx={{ fontWeight: 'bold'}}>Body</TableCell>
-              <TableCell align="right" sx={{ fontWeight: 'bold'}}>Category</TableCell>
-              <TableCell align="right" sx={{ fontWeight: 'bold'}}>Total</TableCell>
-              <TableCell align="right" sx={{ fontWeight: 'bold'}}>Created At:</TableCell>
+              <TableCell sx={{ fontWeight: "bold" }}>Title</TableCell>
+              <TableCell align="right" sx={{ fontWeight: "bold" }}>
+                Body
+              </TableCell>
+              <TableCell align="right" sx={{ fontWeight: "bold" }}>
+                Category
+              </TableCell>
+              <TableCell align="right" sx={{ fontWeight: "bold" }}>
+                Total
+              </TableCell>
+              <TableCell align="right" sx={{ fontWeight: "bold" }}>
+                Created At:
+              </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>

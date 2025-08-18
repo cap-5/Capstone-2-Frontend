@@ -52,6 +52,7 @@ const UserReceipts = () => {
 
   return (
     <Container maxWidth="md">
+      <h1>Your Receipt History</h1>
       <TableContainer component={Paper}>
         <Table sx={{ minWidth: 650 }}>
           <TableHead>
