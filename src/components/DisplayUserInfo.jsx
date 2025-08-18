@@ -20,7 +20,7 @@ const DisplayUserInfo = () => {
         setFormData({
           firstName: updateUser.firstName || "",
           lastName: updateUser.lastName || "",
-          email: updateUser.paypalEmail || "",
+          email: updateUser.email || "",
         });
       } catch (err) {
         console.error("Info could not be displayed", err);
@@ -46,7 +46,7 @@ const DisplayUserInfo = () => {
           <tr>
             <td>{formData.firstName}</td>
             <td>{formData.lastName}</td>
-            <td>{formData.paypalEmail}</td>
+            <td>{formData.email}</td>
           </tr>
         </tbody>
       </table>
