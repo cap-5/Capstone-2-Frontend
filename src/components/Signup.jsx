@@ -21,7 +21,7 @@ const Signup = ({ setUser }) => {
     username: "",
     password: "",
     confirmPassword: "",
-    paypalEmail: "",
+    email: "",
     profilePic: "",
   });
   const [errors, setErrors] = useState({});
@@ -32,7 +32,8 @@ const Signup = ({ setUser }) => {
   const validateForm = () => {
     const newErrors = {};
 
-    if (!formData.firstName.trim()) newErrors.firstName = "First name is required";
+    if (!formData.firstName.trim())
+      newErrors.firstName = "First name is required";
     if (!formData.lastName.trim()) newErrors.lastName = "Last name is required";
     if (!formData.username.trim()) newErrors.username = "Username is required";
     else if (formData.username.length < 3 || formData.username.length > 20)
@@ -45,9 +46,9 @@ const Signup = ({ setUser }) => {
     else if (formData.password !== formData.confirmPassword)
       newErrors.confirmPassword = "Passwords do not match";
 
-    if (!formData.paypalEmail.trim()) newErrors.paypalEmail = "PayPal email is required";
-    else if (!/\S+@\S+\.\S+/.test(formData.paypalEmail))
-      newErrors.paypalEmail = "Invalid email";
+    if (!formData.email.trim()) newErrors.email = "Email is required";
+    else if (!/\S+@\S+\.\S+/.test(formData.email))
+      newErrors.email = "Invalid email";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -62,35 +63,35 @@ const Signup = ({ setUser }) => {
 
   // Submit handler
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  if (!validateForm()) return;
+    e.preventDefault();
+    if (!validateForm()) return;
 
-  setIsLoading(true);
-  try {
-    const response = await axios.post(
-      `${API_URL}/auth/signup`,
-      {
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        username: formData.username,
-        password: formData.password,
-        paypalEmail: formData.paypalEmail,
-        profilePic: formData.profilePic || null, 
-      },
-      { withCredentials: true }
-    );
+    setIsLoading(true);
+    try {
+      const response = await axios.post(
+        `${API_URL}/auth/signup`,
+        {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          username: formData.username,
+          password: formData.password,
+          email: formData.email,
+          profilePic: formData.profilePic || null,
+        },
+        { withCredentials: true }
+      );
 
-    setUser(response.data.user);
-    navigate("/");
-  } catch (error) {
-    setErrors({
-      general:
-        error.response?.data?.error || "An error occurred during signup",
-    });
-  } finally {
-    setIsLoading(false);
-  }
-};
+      setUser(response.data.user);
+      navigate("/");
+    } catch (error) {
+      setErrors({
+        general:
+          error.response?.data?.error || "An error occurred during signup",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <Box
@@ -205,13 +206,13 @@ const Signup = ({ setUser }) => {
         />
 
         <TextField
-          label="PayPal Email"
-          name="paypalEmail"
+          label="Email"
+          name="email"
           type="email"
-          value={formData.paypalEmail}
+          value={formData.email}
           onChange={handleChange}
-          error={!!errors.paypalEmail}
-          helperText={errors.paypalEmail}
+          error={!!errors.email}
+          helperText={errors.email}
           variant="filled"
           fullWidth
           InputProps={{ sx: { color: "white" } }}
@@ -236,7 +237,11 @@ const Signup = ({ setUser }) => {
           disabled={isLoading}
           sx={{ py: 1.5, mt: 1 }}
         >
-          {isLoading ? <CircularProgress size={24} color="inherit" /> : "Sign Up"}
+          {isLoading ? (
+            <CircularProgress size={24} color="inherit" />
+          ) : (
+            "Sign Up"
+          )}
         </Button>
 
         <Button
