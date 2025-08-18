@@ -18,6 +18,7 @@ import {
 
 function OcrComponent() {
   const [ocrResult, setOcrResult] = useState("");
+  const [title, setTitle] = useState("");
   const [editedBody, setEditedBody] = useState(""); // Editable OCR text
   const [imageFile, setImageFile] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -164,7 +165,7 @@ function OcrComponent() {
         `${API_URL}/api/receipts/${groupId}/Upload`,
         {
           receipt: {
-            title: "Scanned Receipt",
+            title: title, // "Scanned Receipt",
             body: editedBody,
             category: finalCategory,
             Group_Id: groupId,
@@ -234,6 +235,16 @@ function OcrComponent() {
           value={editedBody}
           onChange={(e) => setEditedBody(e.target.value)}
         />
+
+        <FormControl fullWidth sx={{ mt: 3 }}>
+          <TextField
+            fullWidth
+            variant="outlined"
+            placeholder="Title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+          />
+        </FormControl>
 
         <FormControl fullWidth sx={{ mt: 3 }}>
           <InputLabel id="category-label">Category</InputLabel>
