@@ -2,6 +2,17 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import { API_URL } from "../shared";
+import { toast } from "react-toastify";
+
+import Container from "@mui/material/Container";
+import { Box, Stack } from "@mui/material";
+import List from "@mui/material/List";
+import ListItem from "@mui/material/ListItem";
+import FormGroup from "@mui/material/FormGroup";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import Checkbox from "@mui/material/Checkbox";
+import Button from "@mui/material/Button";
+import { ListItemText } from "@mui/material";
 
 const dummyReceipt = [
   { id: 1, name: "Apples", price: 6.0 },
@@ -135,16 +146,20 @@ export default function AssignItems() {
         { withCredentials: true }
       );
       console.log("Request sent:", res.data);
-      alert("Payment requests sent!");
+      toast.success(" Payment requests sent!");
     } catch (err) {
       console.error(
         "Error sending requests:",
         err.response?.data || err.message
       );
-      alert("Failed to send payment requests.");
+
+      if (err.response?.status === 400) {
+        toast.info(" Requests already sent for this receipt.");
+      } else {
+        toast.error(" Failed to send payment requests.");
+      }
     }
   }
-
   function calculateTotal(assignments) {
     /**
      * Find the length of the payers in updatedAssignments
@@ -263,21 +278,56 @@ export default function AssignItems() {
   }, [groupId, receiptId]);
 
   return (
-    <div>
+    <Box sx={{ width: 3 / 4 }}>
       <h1>Assign Items</h1>
 
-      <h2>Items to be Assigned:</h2>
-      <ul>
-        {items?.map((item) => (
-          <li key={item.id}>
-            {item.name} - ${item.price} <br />
-            <input
+      <Stack direction={"row"}>
+        <Container maxWidth="lg">
+          <h2>Items:</h2>
+          <List>
+            {items?.map((item) => (
+              <ListItem key={item.id}>
+                <ListItemText primary={item.name + "- $" + item.price} />
+                <FormGroup>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={isAllChecked(item.id)}
+                        onChange={(e) =>
+                          handleAssignAll(e, item.id, item.price)
+                        }
+                      />
+                    }
+                    label="All"
+                  />
+                  {payers?.map((payer) => (
+                    <span key={payer.id}>
+                      <FormControlLabel
+                        control={
+                          <Checkbox
+                            checked={isPayerChecked(item.id, payer.id)}
+                            onChange={(e) =>
+                              handleAssignItem(e, item.id, item.price, payer.id)
+                            }
+                          />
+                        }
+                        label={payer.name}
+                      />
+                    </span>
+                  ))}
+                </FormGroup>
+              </ListItem>
+            ))}
+          </List>
+        </Container>
+
+        {/* <input
               type="checkbox"
               checked={isAllChecked(item.id)}
               onChange={(e) => handleAssignAll(e, item.id, item.price)}
-            />
-            <label>All</label>
-            {payers?.map((payer) => (
+            /> */}
+        {/* <label>All</label> */}
+        {/* {payers?.map((payer) => (
               <span key={payer.id}>
                 <input
                   type="checkbox"
@@ -288,22 +338,47 @@ export default function AssignItems() {
                 />
                 <label>{payer.name}</label>
               </span>
-            ))}
-          </li>
+            ))} */}
+        {/* </li>
         ))}
-      </ul>
+      </ul> */}
 
-      <h2>Payers:</h2>
+        <Container maxWidth="sm">
+          <h2>Payers:</h2>
+          <List>
+            {payers?.map((payer) => (
+              <ListItem key={payer.id}>
+                <ListItemText
+                  primary={payer.name + "- Total: $" + payer.total.toFixed(2)}
+                />
+              </ListItem>
+            ))}
+          </List>
+        </Container>
+      </Stack>
+
+      {/* <h2>Payers:</h2>
       <ul>
         {payers?.map((payer) => (
           <li key={payer.id}>
             {payer.name} - Total: ${payer.total.toFixed(2)}
           </li>
         ))}
-      </ul>
+      </ul> */}
 
-      <button onClick={handleUpdateAssignment}>Update</button>
-      <button onClick={handleSendRequest}>Send Payment Requests</button>
-    </div>
+      {/* <button onClick={handleUpdateAssignment}>Update</button> */}
+      {/* <button onClick={handleSendRequest}>Send Payment Requests</button> */}
+      <Box sx={{ mt: 2, display: "flex", justifyContent: "flex-end" }}>
+        <Stack direction="row" spacing={2}>
+          <Button variant="outlined" onClick={handleUpdateAssignment}>
+            Calculate Totals
+          </Button>
+
+          <Button variant="contained" onClick={handleSendRequest}>
+            Send Payment Requests
+          </Button>
+        </Stack>
+      </Box>
+    </Box>
   );
 }

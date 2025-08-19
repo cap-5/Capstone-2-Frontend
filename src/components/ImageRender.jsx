@@ -3,6 +3,8 @@ import { createWorker } from "tesseract.js";
 import axios from "axios";
 import EditItems from "./EditItems";
 import { API_URL } from "../shared";
+import { useParams, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 // MUI imports for UI components and styling
 import {
@@ -17,7 +19,10 @@ import {
 } from "@mui/material";
 
 function OcrComponent() {
+  const { groupId } = useParams();
+  const navigate = useNavigate();
   const [ocrResult, setOcrResult] = useState("");
+  const [title, setTitle] = useState("");
   const [editedBody, setEditedBody] = useState(""); // Editable OCR text
   const [imageFile, setImageFile] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -27,7 +32,7 @@ function OcrComponent() {
   const [isOther, setIsOther] = useState(false);
   const [backendTotal, setBackendTotal] = useState(null);
 
-  const groupId = 12; // Hardcoded for now
+  // const groupId = 3; // Hardcoded for now
 
   const predefinedCategories = [
     "Entertainment",
@@ -145,15 +150,17 @@ function OcrComponent() {
   };
 
   const sendToBackend = async () => {
+    console.log("sendToBackend clicked");
+    toast.dismiss(); // clear previous notifications
+
     if (!receiptItems.length) {
-      alert("No items to save.");
+      toast.info("No items to save.");
       return;
     }
 
-    // if other true then custom
     const finalCategory = isOther ? customCategory : category;
     if (!finalCategory) {
-      alert("Please select or enter a category.");
+      toast.warn(" Please select or enter a category.");
       return;
     }
 
@@ -164,7 +171,7 @@ function OcrComponent() {
         `${API_URL}/api/receipts/${groupId}/Upload`,
         {
           receipt: {
-            title: "Scanned Receipt",
+            title,
             body: editedBody,
             category: finalCategory,
             Group_Id: groupId,
@@ -174,18 +181,24 @@ function OcrComponent() {
         { withCredentials: true }
       );
 
-      alert("Receipt saved!");
-
-      // Get totalPay directly from saved receipt response
-      const savedReceipt = res.data.receipt;
-      setBackendTotal(savedReceipt.totalPay);
+      toast.success(" Receipt saved successfully!");
+      setBackendTotal(res.data.receipt.totalPay);
+      navigate(`/groups/${groupId}`);
     } catch (err) {
       console.error(err);
-      alert("Error saving receipt.");
+
+      // Detect if backend returned specific validation error
+      const msg =
+        err.response?.data?.message || err.response?.status === 400
+          ? " Failed to save receipt. Possible duplicate or invalid data."
+          : " Error saving receipt.";
+
+      toast.error(msg);
     } finally {
       setIsSaving(false);
     }
   };
+
   return (
     <Box
       sx={{
@@ -236,6 +249,16 @@ function OcrComponent() {
         />
 
         <FormControl fullWidth sx={{ mt: 3 }}>
+          <TextField
+            fullWidth
+            variant="outlined"
+            placeholder="Title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+          />
+        </FormControl>
+
+        <FormControl fullWidth sx={{ mt: 3 }}>
           <InputLabel id="category-label">Category</InputLabel>
           <Select
             labelId="category-label"
@@ -276,11 +299,12 @@ function OcrComponent() {
         )}
 
         <Button
+          type="button"
           variant="contained"
           fullWidth
           sx={{ mt: 3 }}
           onClick={sendToBackend}
-          disabled={isSaving || !receiptItems.length}
+          disabled={isSaving} // only disable while saving
         >
           {isSaving ? "Saving..." : "Save to Database"}
         </Button>

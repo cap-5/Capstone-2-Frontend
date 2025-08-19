@@ -1,9 +1,20 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { API_URL } from "../shared";
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell from "@mui/material/TableCell";
+import TableContainer from "@mui/material/TableContainer";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
+import Paper from "@mui/material/Paper";
+import { Container } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
 const UserReceipts = () => {
   const [userReceipts, setUserReceipts] = useState([]);
+  const navigate = useNavigate();
+  const getGroupId = (r) => r.Group_Id ?? r.groupId ?? r.GroupId;
 
   const fetchUserReceipts = async () => {
     try {
@@ -21,8 +32,9 @@ const UserReceipts = () => {
     fetchUserReceipts();
   }, []);
   console.log("this is user", userReceipts);
-  return (
-    <div>
+
+  // return (
+  /* <div className="receipt-container">
       <ul>
         {userReceipts.map((recpit) => (
           <li key={recpit.id}>
@@ -39,7 +51,73 @@ const UserReceipts = () => {
           </li>
         ))}
       </ul>
-    </div>
+    </div> */
+
+  return (
+    <Container maxWidth="md">
+      <h1>Your Receipt History</h1>
+      <TableContainer component={Paper}>
+        <Table sx={{ minWidth: 650 }}>
+          <TableHead>
+            <TableRow>
+              <TableCell sx={{ fontWeight: "bold" }}>Title</TableCell>
+              <TableCell align="right" sx={{ fontWeight: "bold" }}>
+                Body
+              </TableCell>
+              <TableCell align="right" sx={{ fontWeight: "bold" }}>
+                Category
+              </TableCell>
+              <TableCell align="right" sx={{ fontWeight: "bold" }}>
+                Total
+              </TableCell>
+              <TableCell align="right" sx={{ fontWeight: "bold" }}>
+                Created At:
+              </TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {userReceipts.map((receipt) => {
+          const groupId = getGroupId(receipt);
+          return (
+            <TableRow
+              key={receipt.id}
+              onClick={() => navigate(`/assign/${groupId}/${receipt.id}`)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  navigate(`/assign/${groupId}/${receipt.id}`);
+                }
+              }}
+              role="button"
+              tabIndex={0}
+              sx={{
+                "&:last-child td, &:last-child th": { border: 0 },
+                cursor: "pointer",
+                "&:hover": { backgroundColor: "action.hover" },
+              }}
+            >
+              <TableCell component="th" scope="row">
+                {receipt.title}
+              </TableCell>
+              <TableCell align="right">
+                {receipt.body?.substring(0, 50)}
+              </TableCell>
+              <TableCell align="right">
+                {receipt.category ? receipt.category : "No category provided"}
+              </TableCell>
+              <TableCell align="right">
+                ${receipt.totalPay ? receipt.totalPay : 0}
+              </TableCell>
+              <TableCell align="right">
+                {receipt.createdAt?.substring(0, 10)}
+              </TableCell>
+            </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </Container>
   );
 };
 
