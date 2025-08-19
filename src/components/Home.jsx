@@ -25,7 +25,7 @@ const Home = ({ user }) => {
   const navigate = useNavigate();
 
   const handleGetStarted = () => {
-    if (user) navigate("/dashboard");
+    if (user) navigate("/dashboard/profile");
     else navigate("/login");
   };
 
