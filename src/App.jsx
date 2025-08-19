@@ -25,6 +25,7 @@ import { Auth0Provider } from "@auth0/auth0-react";
 import { auth0Config } from "./auth0-config";
 import DashboardPayments from "./components/DashboardPayments";
 import PaymentComplete from "./components/paymentCompleted";
+import { ToastContainer } from "react-toastify";
 
 const socket = io(SOCKETS_URL, {
   withCredentials: NODE_ENV === "production",
@@ -87,6 +88,16 @@ const App = () => {
             <Route path="payments" element={<DashboardPayments />} />
           </Route>
         </Routes>
+        <ToastContainer
+          position="top-right"
+          autoClose={3000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+        />
       </div>
     </div>
   );

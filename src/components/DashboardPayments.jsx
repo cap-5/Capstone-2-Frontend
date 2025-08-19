@@ -2,14 +2,16 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import {
   Typography,
-  List,
-  ListItem,
   Button,
   Box,
   CircularProgress,
   Snackbar,
   Alert,
   Container,
+  Card,
+  CardContent,
+  CardActions,
+  Stack,
 } from "@mui/material";
 import { API_URL } from "../shared";
 
@@ -24,10 +26,16 @@ const DashboardPayments = () => {
     const fetchPayments = async () => {
       setLoading(true);
       try {
-        const res = await axios.get(`${API_URL}/api/group/Payments`, { withCredentials: true });
+        const res = await axios.get(`${API_URL}/api/group/Payments`, {
+          withCredentials: true,
+        });
         setPayments(res.data || []);
       } catch (err) {
-        setSnack({ open: true, message: err.message || "Failed to load payments", severity: "error" });
+        setSnack({
+          open: true,
+          message: err.message || "Failed to load payments",
+          severity: "error",
+        });
       } finally {
         setLoading(false);
       }
@@ -35,7 +43,7 @@ const DashboardPayments = () => {
     fetchPayments();
   }, []);
 
-  // Accept payment: send PayPal request
+  // Accept payment
   const handleAcceptPayment = async (paymentId) => {
     setActionLoadingId(paymentId);
     try {
@@ -47,7 +55,6 @@ const DashboardPayments = () => {
 
       console.log(res.data);
 
-      // Update local payment status to awaiting_payment
       setPayments((prev) =>
         prev.map((p) =>
           p.id === paymentId ? { ...p, status: "awaiting_payment" } : p
@@ -83,60 +90,57 @@ const DashboardPayments = () => {
       ) : payments.length === 0 ? (
         <Typography color="text.secondary">No pending payments</Typography>
       ) : (
-        <List>
+        <Stack spacing={2}>
           {payments.map((payment) => (
-            <ListItem
+            <Card
               key={payment.id}
               sx={{
-                mb: 2,
-                p: 2,
-                boxShadow: 2,
                 borderRadius: 2,
-                bgcolor: "#fafafa",
-                flexDirection: "column",
-                "&:hover": { boxShadow: 6, transform: "scale(1.02)", bgcolor: "#f0f0f0" },
+                boxShadow: 1,
+                transition: "all 0.2s ease",
+                "&:hover": { boxShadow: 3, transform: "translateY(-2px)" },
               }}
             >
-              <Box display="flex" justifyContent="space-between" alignItems="center" width="100%">
-                <Box>
-                  <Typography variant="h6" fontWeight="bold">
-                    ${payment.amount} - {payment.groupInfo?.groupName || "Group"}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {payment.status === "awaiting_payment"
-                      ? "Waiting for payer to complete PayPal payment"
-                      : `Requested by: ${payment.requester?.username || "Unknown"}`}
-                  </Typography>
-                </Box>
-
+              <CardContent sx={{ pb: 1 }}>
+                <Typography variant="h6" fontWeight="bold">
+                  ${payment.amount}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {payment.groupInfo?.groupName || "Group"}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {payment.status === "awaiting_payment"
+                    ? "Waiting for PayPal payment to be completed"
+                    : `Requested by: ${payment.requester?.username || "Unknown"}`}
+                </Typography>
+              </CardContent>
+              <CardActions sx={{ justifyContent: "flex-end", pt: 0 }}>
                 <Button
-                  variant="contained"
-                  color="primary"
+                  variant={
+                    payment.status === "awaiting_payment" ? "outlined" : "contained"
+                  }
+                  color={
+                    payment.status === "awaiting_payment" ? "secondary" : "primary"
+                  }
+                  size="small"
                   onClick={() => handleAcceptPayment(payment.id)}
-                  disabled={actionLoadingId === payment.id || payment.status === "awaiting_payment"}
-                  sx={{ minWidth: 120, position: "relative" }}
+                  disabled={
+                    actionLoadingId === payment.id ||
+                    payment.status === "awaiting_payment"
+                  }
                 >
                   {actionLoadingId === payment.id ? (
-                    <CircularProgress
-                      size={20}
-                      sx={{
-                        color: "white",
-                        position: "absolute",
-                        left: "50%",
-                        top: "50%",
-                        transform: "translate(-50%, -50%)",
-                      }}
-                    />
+                    <CircularProgress size={18} color="inherit" />
                   ) : payment.status === "awaiting_payment" ? (
                     "Awaiting Payment"
                   ) : (
                     "Accept"
                   )}
                 </Button>
-              </Box>
-            </ListItem>
+              </CardActions>
+            </Card>
           ))}
-        </List>
+        </Stack>
       )}
 
       <Snackbar

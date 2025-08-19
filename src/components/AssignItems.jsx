@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import { API_URL } from "../shared";
+import { toast } from "react-toastify";
 
 import Container from "@mui/material/Container";
 import { Box, Stack } from "@mui/material";
@@ -145,16 +146,20 @@ export default function AssignItems() {
         { withCredentials: true }
       );
       console.log("Request sent:", res.data);
-      alert("Payment requests sent!");
+      toast.success(" Payment requests sent!");
     } catch (err) {
       console.error(
         "Error sending requests:",
         err.response?.data || err.message
       );
-      alert("Failed to send payment requests.");
+
+      if (err.response?.status === 400) {
+        toast.info(" Requests already sent for this receipt.");
+      } else {
+        toast.error(" Failed to send payment requests.");
+      }
     }
   }
-
   function calculateTotal(assignments) {
     /**
      * Find the length of the payers in updatedAssignments
