@@ -197,6 +197,7 @@ export default function AssignItems() {
         // newPayers.push(updatePayer); // and add the new one
       }
     }
+    toast.success("Totals Updated!");
     setPayers(newPayers);
     return newPayers;
     /*     let total = 0;
