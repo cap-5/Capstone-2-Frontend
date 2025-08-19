@@ -60,9 +60,7 @@ const NavBar = ({ user, onLogout }) => {
                 <Button component={RouterLink} to="/Group" color="inherit">
                   My Groups
                 </Button>
-                <Button component={RouterLink} to="/assign" color="inherit">
-                  Assign
-                </Button>
+
                 <Button component={RouterLink} to="/dashboard" color="inherit">
                   Dashboard
                 </Button>

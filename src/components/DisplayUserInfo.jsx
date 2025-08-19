@@ -1,6 +1,19 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { API_URL } from "../shared"; // Update this to match your config
+import { API_URL } from "../shared";
+import {
+  Box,
+  Card,
+  CardContent,
+  CardHeader,
+  Avatar,
+  TextField,
+  Typography,
+  Button,
+  CircularProgress,
+  Alert,
+  Stack,
+} from "@mui/material";
 
 const UserProfile = () => {
   const [user, setUser] = useState(null);
@@ -14,7 +27,7 @@ const UserProfile = () => {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Fetch user on mount
+  // Fetch user
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -51,11 +64,9 @@ const UserProfile = () => {
     if (!user) return;
 
     try {
-      const res = await axios.patch(
-        `${API_URL}/api/users/${user.id}`,
-        form,
-        { withCredentials: true }
-      );
+      const res = await axios.patch(`${API_URL}/api/users/me`, form, {
+        withCredentials: true,
+      });
 
       setUser(res.data.user);
       setIsEditing(false);
@@ -77,95 +88,128 @@ const UserProfile = () => {
     setIsEditing(false);
   };
 
-  if (loading) return <p>Loading user info...</p>;
-  if (error) return <p style={{ color: "red" }}>{error}</p>;
+  if (loading)
+    return (
+      <Box display="flex" justifyContent="center" mt={4}>
+        <CircularProgress />
+      </Box>
+    );
+
+  if (error) return <Alert severity="error">{error}</Alert>;
 
   return (
-    <div style={{ maxWidth: 600, margin: "auto" }}>
-      <h2>User Profile</h2>
-
-      <div>
-        <label>
-          First Name:
-          {isEditing ? (
-            <input
-              name="firstName"
-              value={form.firstName}
-              onChange={handleChange}
+    <Box display="flex" justifyContent="center" mt={4}>
+      <Card
+        sx={{
+          width: 500,
+          boxShadow: 4,
+          borderRadius: 3,
+          transition: "transform 0.2s, box-shadow 0.2s",
+          "&:hover": {
+            transform: "translateY(-4px)", // lifts up slightly
+            boxShadow: 8, // stronger shadow
+          },
+        }}
+      >
+        <CardHeader
+          avatar={
+            <Avatar
+              src={form.profilePicture}
+              sx={{ width: 64, height: 64 }}
+              alt={form.firstName || "User"}
             />
-          ) : (
-            <span> {user.firstName}</span>
-          )}
-        </label>
-      </div>
-
-      <div>
-        <label>
-          Last Name:
-          {isEditing ? (
-            <input
-              name="lastName"
-              value={form.lastName}
-              onChange={handleChange}
-            />
-          ) : (
-            <span> {user.lastName}</span>
-          )}
-        </label>
-      </div>
-
-      <div>
-        <label>
-          Email:
-          {isEditing ? (
-            <input
-              name="email"
-              type="email"
-              value={form.email}
-              onChange={handleChange}
-            />
-          ) : (
-            <span> {user.email}</span>
-          )}
-        </label>
-      </div>
-
-      <div>
-        <label>
-          Profile Picture URL:
-          {isEditing ? (
-            <input
-              name="profilePicture"
-              value={form.profilePicture}
-              onChange={handleChange}
-            />
-          ) : (
-            <span> {user.profilePic}</span>
-          )}
-        </label>
-      </div>
-
-      {form.profilePicture && (
-        <img
-          src={form.profilePicture}
-          alt="Profile Preview"
-          style={{ maxWidth: 150, marginTop: "1rem" }}
+          }
+          title={`${user.firstName} ${user.lastName}`}
+          subheader={user.email}
         />
-      )}
+        <CardContent>
+          <Stack spacing={2}>
+            {isEditing ? (
+              <>
+                <TextField
+                  label="First Name"
+                  name="firstName"
+                  value={form.firstName}
+                  onChange={handleChange}
+                  fullWidth
+                />
+                <TextField
+                  label="Last Name"
+                  name="lastName"
+                  value={form.lastName}
+                  onChange={handleChange}
+                  fullWidth
+                />
+                <TextField
+                  label="Email"
+                  type="email"
+                  name="email"
+                  value={form.email}
+                  onChange={handleChange}
+                  fullWidth
+                />
+                <TextField
+                  label="Profile Picture URL"
+                  name="profilePicture"
+                  value={form.profilePicture}
+                  onChange={handleChange}
+                  fullWidth
+                />
+                {form.profilePicture && (
+                  <Box display="flex" justifyContent="center" mt={2}>
+                    <Avatar
+                      src={form.profilePicture}
+                      sx={{ width: 100, height: 100 }}
+                      alt="Preview"
+                    />
+                  </Box>
+                )}
+              </>
+            ) : (
+              <>
+                <Typography>
+                  <strong>First Name:</strong> {user.firstName}
+                </Typography>
+                <Typography>
+                  <strong>Last Name:</strong> {user.lastName}
+                </Typography>
+                <Typography>
+                  <strong>Email:</strong> {user.email}
+                </Typography>
+                <Typography>
+                  <strong>Profile Pic:</strong> {user.profilePic || "N/A"}
+                </Typography>
+              </>
+            )}
 
-      <div style={{ marginTop: "1rem" }}>
-        {!isEditing ? (
-          <button onClick={() => setIsEditing(true)}>Edit</button>
-        ) : (
-          <>
-            <button onClick={handleSave} style={{ marginRight: 10 }}>
-              Save
-            </button>
-            <button onClick={handleCancel}>Cancel</button>
-          </>
-        )}
-      </div>
-    </div>
+            <Box display="flex" justifyContent="flex-end" gap={2} mt={2}>
+              {!isEditing ? (
+                <Button variant="contained" onClick={() => setIsEditing(true)}>
+                  Edit
+                </Button>
+              ) : (
+                <>
+                  <Button
+                    variant="contained"
+                    color="success"
+                    onClick={handleSave}
+                  >
+                    Save
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    color="error"
+                    onClick={handleCancel}
+                  >
+                    Cancel
+                  </Button>
+                </>
+              )}
+            </Box>
+          </Stack>
+        </CardContent>
+      </Card>
+    </Box>
   );
 };
 
