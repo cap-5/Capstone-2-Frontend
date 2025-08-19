@@ -164,6 +164,11 @@ function OcrComponent() {
       return;
     }
 
+    if (!title) {
+      toast.warn("Please enter a title.");
+      return;
+    }
+
     try {
       setIsSaving(true);
 

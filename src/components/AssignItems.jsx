@@ -67,13 +67,6 @@ export default function AssignItems() {
     }
   }
 
-  // Assign the passed item to all payers
-  // function handleAssignAll() {
-  //   if (e.target.checked) {
-  //     setAssignments()
-  //   }
-  // }
-
   function handleAssignAll(e, itemId, price) {
     setAssignments((prev) => {
       if (e.target.checked) {
