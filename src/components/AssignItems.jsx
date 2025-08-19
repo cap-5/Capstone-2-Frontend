@@ -67,13 +67,6 @@ export default function AssignItems() {
     }
   }
 
-  // Assign the passed item to all payers
-  // function handleAssignAll() {
-  //   if (e.target.checked) {
-  //     setAssignments()
-  //   }
-  // }
-
   function handleAssignAll(e, itemId, price) {
     setAssignments((prev) => {
       if (e.target.checked) {
@@ -197,6 +190,7 @@ export default function AssignItems() {
         // newPayers.push(updatePayer); // and add the new one
       }
     }
+    toast.success("Totals Updated!");
     setPayers(newPayers);
     return newPayers;
     /*     let total = 0;
