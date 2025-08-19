@@ -5,7 +5,7 @@ import { API_URL } from "../shared";
 import { toast } from "react-toastify";
 
 import Container from "@mui/material/Container";
-import { Box, Stack } from "@mui/material";
+import { Box, ListItemButton, ListItemIcon, Stack } from "@mui/material";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import FormGroup from "@mui/material/FormGroup";
@@ -272,17 +272,71 @@ export default function AssignItems() {
   }, [groupId, receiptId]);
 
   return (
-    <Box sx={{ width: 3 / 4 }}>
+    <Box
+      sx={{
+        width: 3 / 4,
+        margin: 2,
+      }}
+    >
       <h1>Assign Items</h1>
 
       <Stack direction={"row"}>
-        <Container maxWidth="lg">
-          <h2>Items:</h2>
+        <Container maxWidth="md">
+          <h2>Items: {items.length} </h2>
           <List>
             {items?.map((item) => (
               <ListItem key={item.id}>
-                <ListItemText primary={item.name + "- $" + item.price} />
-                <FormGroup>
+                <Container sx={{ backgroundColor: "#D3D3D3" }}>
+                  <ListItemText
+                    sx={{
+                      ".MuiListItemText-primary": {
+                        fontSize: "1.2rem",
+                        fontWeight: "bold",
+                      },
+                    }}
+                    primary={item.name + "- $" + item.price}
+                  />
+
+                  <FormGroup row={true}>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={isAllChecked(item.id)}
+                          onChange={(e) =>
+                            handleAssignAll(e, item.id, item.price)
+                          }
+                        />
+                      }
+                      label="All"
+                    />
+                    {payers?.map((payer) => (
+                      <Box key={payer.id}>
+                        <FormControlLabel
+                          control={
+                            <Checkbox
+                              checked={isPayerChecked(item.id, payer.id)}
+                              onChange={(e) =>
+                                handleAssignItem(
+                                  e,
+                                  item.id,
+                                  item.price,
+                                  payer.id
+                                )
+                              }
+                            />
+                          }
+                          label={payer.name}
+                        />
+                      </Box>
+                    ))}
+                  </FormGroup>
+                </Container>
+                {/* <ListItemText
+                  sx={{ margin: 5 }}
+                  primary={item.name + "- $" + item.price}
+                />
+
+                <FormGroup row={true}>
                   <FormControlLabel
                     control={
                       <Checkbox
@@ -295,7 +349,7 @@ export default function AssignItems() {
                     label="All"
                   />
                   {payers?.map((payer) => (
-                    <span key={payer.id}>
+                    <Box key={payer.id}>
                       <FormControlLabel
                         control={
                           <Checkbox
@@ -307,9 +361,9 @@ export default function AssignItems() {
                         }
                         label={payer.name}
                       />
-                    </span>
+                    </Box>
                   ))}
-                </FormGroup>
+                </FormGroup> */}
               </ListItem>
             ))}
           </List>
@@ -343,6 +397,12 @@ export default function AssignItems() {
             {payers?.map((payer) => (
               <ListItem key={payer.id}>
                 <ListItemText
+                  sx={{
+                    ".MuiListItemText-primary": {
+                      fontSize: "1.2rem",
+                      fontWeight: "bold",
+                    },
+                  }}
                   primary={payer.name + "- Total: $" + payer.total.toFixed(2)}
                 />
               </ListItem>
