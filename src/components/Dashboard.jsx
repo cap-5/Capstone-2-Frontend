@@ -109,6 +109,16 @@ const Dashboard = () => {
               <PaymentIcon sx={{ mr: 1 }} />
               <ListItemText primary="My Payments" />
             </ListItem>
+
+             <ListItem
+              button
+              component={Link}
+              to="PaymentStatus"
+              sx={{ color: "white", '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' } }}
+            >
+              <PaymentIcon sx={{ mr: 1 }} />
+              <ListItemText primary="Payment status" />
+            </ListItem>
           </List>
         </Box>
       </Drawer>
