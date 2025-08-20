@@ -1,37 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { API_URL } from "../shared";
-import { useNavigate } from "react-router-dom";
-
-// ---- CSS MUI IMPORTS BELOW HERE ---- \\
-import {
-  Container,
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Typography,
-  Box,
-  Skeleton,
-  TablePagination,
-  TableSortLabel,
-  Tooltip,
-  TextField,
-  InputAdornment,
-  Chip,
-  Stack,
-  Avatar,
-  IconButton,
-  Divider,
-  Slider,
-  Grid,
-  LinearProgress,
-  Button,
-} from "@mui/material";
-
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
@@ -40,6 +9,7 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import { Container } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
 const UserReceipts = () => {
   const [userReceipts, setUserReceipts] = useState([]);
