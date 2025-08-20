@@ -45,7 +45,7 @@ function EditItems({ items, setItems }) {
     setItems((prev) =>
       prev.map((item) => {
         if (item.key === itemKey) {
-          return { ...item, price: isNaN(priceFloat) ? 0 : priceFloat };
+          return { ...item, price: isNaN(priceFloat) ? "" : priceFloat };
         } else {
           return item;
         }

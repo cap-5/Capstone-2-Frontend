@@ -158,9 +158,26 @@ function OcrComponent() {
       return;
     }
 
+    // Check for items with empty names
+    if (receiptItems.some((item) => item.name === "")) {
+      toast.info("All items require a name.");
+      return;
+    }
+
+    // Check for items with empty price
+    if (receiptItems.some((item) => item.price === "")) {
+      toast.info("All items require a price.");
+      return;
+    }
+
     const finalCategory = isOther ? customCategory : category;
     if (!finalCategory) {
       toast.warn(" Please select or enter a category.");
+      return;
+    }
+
+    if (!title) {
+      toast.warn("Please enter a title.");
       return;
     }
 
