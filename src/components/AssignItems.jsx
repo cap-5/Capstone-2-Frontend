@@ -3,67 +3,59 @@ import { useParams } from "react-router-dom";
 import axios from "axios";
 import { API_URL } from "../shared";
 import { toast } from "react-toastify";
-import Container from "@mui/material/Container";
-import { Box, ListItemButton, ListItemIcon, Stack } from "@mui/material";
-import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
-import FormGroup from "@mui/material/FormGroup";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import Checkbox from "@mui/material/Checkbox";
-import Button from "@mui/material/Button";
-import { ListItemText } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
-const dummyReceipt = [
-  { id: 1, name: "Apples", price: 6.0 },
-  { id: 2, name: "Bananas", price: 6.0 },
-  { id: 3, name: "Candy", price: 6.0 },
-];
-
-const dummyGroup = [
-  { id: 1, name: "Alice", total: 0 },
-  { id: 2, name: "Bobby", total: 0 },
-  { id: 3, name: "Carl", total: 0 },
-];
+import Container from "@mui/material/Container";
+import {
+  Box,
+  Stack,
+  FormGroup,
+  FormControlLabel,
+  Checkbox,
+  Button,
+  List,
+  ListItem,
+  ListItemText,
+} from "@mui/material";
 
 export default function AssignItems() {
   const { groupId, receiptId } = useParams();
-   const navigate = useNavigate();
-
   const [items, setItems] = useState([]);
   const [payers, setPayers] = useState([]);
+  const [requestSent, setRequestSent] = useState(false);
+
+  const navigate = useNavigate();
+
   /* 
   Store item-payer assignments like this:
     { itemId: x, payerId: [] }
   */
+
   const [assignments, setAssignments] = useState([]);
 
   console.log("ASSIGNMENTS: ", assignments);
 
+  // Check if a specific payer has the item assigned
   const isPayerChecked = (itemId, payerId) =>
-    assignments?.some((a) => a.itemId === itemId && a.payerId === payerId) ||
-    false;
+    assignments.some((a) => a.itemId === itemId && a.payerId === payerId);
 
+  // Check if all payers have the item assigned
   const isAllChecked = (itemId) =>
-    payers?.length > 0 &&
+    payers.length > 0 &&
     payers.every((p) =>
-      assignments?.some((a) => a.itemId === itemId && a.payerId === p.id)
+      assignments.some((a) => a.itemId === itemId && a.payerId === p.id)
     );
+
   // Assign the passed item to the selected payer
-  function handleAssignItem(e, item, price, payer) {
+  function handleAssignItem(e, itemId, price, payerId) {
     if (e.target.checked) {
-      setAssignments([
-        ...assignments,
-        { itemId: item, itemPrice: price, payerId: payer },
+      setAssignments((prev) => [
+        ...prev,
+        { itemId, itemPrice: price, payerId },
       ]);
     } else {
-      console.log("UNCHECKED ITEM ID: ", item);
-      console.log("UNCHECKED PAYER ID: ", payer);
-      setAssignments(
-        assignments.filter(
-          (assignment) =>
-            assignment.payerId !== payer || assignment.itemId !== item
-        )
+      setAssignments((prev) =>
+        prev.filter((a) => !(a.itemId === itemId && a.payerId === payerId))
       );
     }
   }
@@ -76,6 +68,7 @@ export default function AssignItems() {
           itemPrice: price,
           payerId: payer.id,
         }));
+        // Remove old assignments for this item first
         const filteredPrev = prev.filter((a) => a.itemId !== itemId);
         return [...filteredPrev, ...allAssignments];
       } else {
@@ -85,53 +78,37 @@ export default function AssignItems() {
   }
 
   // Reformat assignment state for easier calculation
-  function groupAssignments(assignments) {
-    /* 
+  /* 
     Reformats assignment object to look like this:
     { itemID: x, itemPrice: y, payers: [] }
     */
-
-    console.log("ASSIGNMENTS FROM GROUPASSIGNMENTS: ", assignments);
-    const byItem = new Map(); // preserves first-seen order
-
+  function groupAssignments(assignments) {
+    const byItem = new Map();
     for (const { itemId, itemPrice, payerId } of assignments) {
-      // normalize to an array
-      const payerList = Array.isArray(payerId) ? payerId : [payerId];
-
       if (!byItem.has(itemId)) {
         byItem.set(itemId, { itemId, itemPrice, payers: [] });
       }
-
       const entry = byItem.get(itemId);
-
-      // de-dupe while preserving order
-      const seen = new Set(entry.payers);
-      for (const p of payerList) {
-        if (!seen.has(p)) {
-          seen.add(p);
-          entry.payers.push(p);
-        }
+      if (!entry.payers.includes(payerId)) {
+        entry.payers.push(payerId);
       }
-      console.log(payerList);
     }
-
-    console.log("FROM GROUPASSIGNMENTS: ", [...byItem.values()]);
     return [...byItem.values()];
   }
 
   function handleUpdateAssignment() {
-    const newAssignments = groupAssignments(assignments);
-    const updatedPayers = calculateTotal(newAssignments);
-    setPayers(updatedPayers); // now UI updates properly
+    const grouped = groupAssignments(assignments);
+    const updatedPayers = calculateTotal(grouped);
+    setPayers(updatedPayers);
+    toast.dismiss();
+    toast.success("Totals Updated!");
   }
-
   async function handleSendRequest() {
+    if (requestSent) return;
+
     const payments = payers
       .filter((p) => p.total > 0)
-      .map((p) => ({
-        payerId: p.id,
-        amount: p.total,
-      }));
+      .map((p) => ({ payerId: p.id, amount: p.total }));
 
     try {
       const res = await axios.post(
@@ -139,23 +116,29 @@ export default function AssignItems() {
         { payments },
         { withCredentials: true }
       );
-      console.log("Request sent:", res.data);
-      toast.success(" Payment requests sent!");
-      navigate(`/groups/${groupId}`);
+
+      toast.dismiss();
+
+      if (res.status === 201) {
+        toast.success("Payment requests sent!");
+        setRequestSent(true);
+        setTimeout(() => navigate(`/groups/${groupId}`), 200);
+      } else if (
+        res.status === 200 &&
+        res.data.message.includes("already exist")
+      ) {
+        toast.info("Requests already sent for this receipt.");
+        setRequestSent(true);
+      }
     } catch (err) {
+      toast.dismiss();
+      toast.error("Failed to send payment requests.");
       console.error(
         "Error sending requests:",
         err.response?.data || err.message
       );
-
-      if (err.response?.status === 400) {
-        toast.info(" Requests already sent for this receipt.");
-      } else {
-        toast.error(" Failed to send payment requests.");
-      }
     }
   }
-
   function calculateTotal(assignments) {
     /**
      * Find the length of the payers in updatedAssignments
@@ -193,7 +176,6 @@ export default function AssignItems() {
         // newPayers.push(updatePayer); // and add the new one
       }
     }
-    toast.success("Totals Updated!");
     setPayers(newPayers);
     return newPayers;
     /*     let total = 0;
@@ -232,64 +214,62 @@ export default function AssignItems() {
   useEffect(() => {
     async function fetchMembers() {
       try {
-        const groupResponse = await axios.get(
-          `${API_URL}/api/group/${groupId}/members`
+        const res = await axios.get(`${API_URL}/api/group/${groupId}/members`);
+        console.log("groupResponse.data:", res.data);
+
+        // Access the members array
+        const membersArray = Array.isArray(res.data.members)
+          ? res.data.members
+          : [];
+
+        const trimmedMembers = membersArray.map(
+          ({ id, firstName, lastName }) => ({
+            id,
+            name: firstName + " " + lastName,
+            total: 0,
+          })
         );
-        const members = groupResponse.data || []; // default to empty array
-        const trimmedMembers = members.map(({ id, firstName, lastName }) => ({
-          id,
-          name: firstName + " " + lastName,
-          total: 0,
-        }));
-        console.log("FETCHED GROUP MEMBERS: ", members);
-        console.log("TRIMMED: ", trimmedMembers);
+
         setPayers(trimmedMembers);
       } catch (err) {
         console.error("Error fetching group members:", err);
-        setPayers([]); // fallback
+        setPayers([]);
       }
     }
 
     async function fetchItems() {
       try {
-        const receiptResponse = await axios.get(
+        const res = await axios.get(
           `${API_URL}/api/receipts/${receiptId}/items`
         );
-        const items = receiptResponse.data || []; // default to empty array
+        const items = res.data || [];
         const trimmedItems = items.map(({ id, name, price }) => ({
           id,
           name,
           price,
         }));
-        console.log("FETCHED ITEMS: ", items);
-        console.log("TRIMMED ITEMS: ", trimmedItems);
         setItems(trimmedItems);
       } catch (err) {
         console.error("Error fetching items:", err);
-        setItems([]); // fallback
+        setItems([]);
       }
     }
 
-    fetchItems();
     fetchMembers();
+    fetchItems();
   }, [groupId, receiptId]);
 
   return (
-    <Box
-      sx={{
-        width: 3 / 4,
-        margin: 2,
-      }}
-    >
+    <Box sx={{ width: "75%", margin: 2 }}>
       <h1>Assign Items</h1>
 
-      <Stack direction={"row"}>
+      <Stack direction={"row"} spacing={4}>
         <Container maxWidth="md">
-          <h2>Items: {items.length} </h2>
+          <h2>Items: {items.length}</h2>
           <List>
-            {items?.map((item) => (
+            {items.map((item) => (
               <ListItem key={item.id}>
-                <Container sx={{ backgroundColor: "#D3D3D3" }}>
+                <Container sx={{ backgroundColor: "#D3D3D3", padding: 1 }}>
                   <ListItemText
                     sx={{
                       ".MuiListItemText-primary": {
@@ -297,10 +277,10 @@ export default function AssignItems() {
                         fontWeight: "bold",
                       },
                     }}
-                    primary={item.name + "- $" + item.price}
+                    primary={`${item.name} - $${item.price.toFixed(2)}`}
                   />
 
-                  <FormGroup row={true}>
+                  <FormGroup row>
                     <FormControlLabel
                       control={
                         <Checkbox
@@ -308,96 +288,37 @@ export default function AssignItems() {
                           onChange={(e) =>
                             handleAssignAll(e, item.id, item.price)
                           }
+                          disabled={requestSent} // disable if request sent
                         />
                       }
                       label="All"
                     />
-                    {payers?.map((payer) => (
-                      <Box key={payer.id}>
-                        <FormControlLabel
-                          control={
-                            <Checkbox
-                              checked={isPayerChecked(item.id, payer.id)}
-                              onChange={(e) =>
-                                handleAssignItem(
-                                  e,
-                                  item.id,
-                                  item.price,
-                                  payer.id
-                                )
-                              }
-                            />
-                          }
-                          label={payer.name}
-                        />
-                      </Box>
-                    ))}
-                  </FormGroup>
-                </Container>
-                {/* <ListItemText
-                  sx={{ margin: 5 }}
-                  primary={item.name + "- $" + item.price}
-                />
-
-                <FormGroup row={true}>
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        checked={isAllChecked(item.id)}
-                        onChange={(e) =>
-                          handleAssignAll(e, item.id, item.price)
-                        }
-                      />
-                    }
-                    label="All"
-                  />
-                  {payers?.map((payer) => (
-                    <Box key={payer.id}>
+                    {payers.map((payer) => (
                       <FormControlLabel
+                        key={payer.id}
                         control={
                           <Checkbox
                             checked={isPayerChecked(item.id, payer.id)}
                             onChange={(e) =>
                               handleAssignItem(e, item.id, item.price, payer.id)
                             }
+                            disabled={requestSent} // disable if request sent
                           />
                         }
                         label={payer.name}
                       />
-                    </Box>
-                  ))}
-                </FormGroup> */}
+                    ))}
+                  </FormGroup>
+                </Container>
               </ListItem>
             ))}
           </List>
         </Container>
 
-        {/* <input
-              type="checkbox"
-              checked={isAllChecked(item.id)}
-              onChange={(e) => handleAssignAll(e, item.id, item.price)}
-            /> */}
-        {/* <label>All</label> */}
-        {/* {payers?.map((payer) => (
-              <span key={payer.id}>
-                <input
-                  type="checkbox"
-                  checked={isPayerChecked(item.id, payer.id)}
-                  onChange={(e) =>
-                    handleAssignItem(e, item.id, item.price, payer.id)
-                  }
-                />
-                <label>{payer.name}</label>
-              </span>
-            ))} */}
-        {/* </li>
-        ))}
-      </ul> */}
-
         <Container maxWidth="sm">
           <h2>Payers:</h2>
           <List>
-            {payers?.map((payer) => (
+            {payers.map((payer) => (
               <ListItem key={payer.id}>
                 <ListItemText
                   sx={{
@@ -406,7 +327,7 @@ export default function AssignItems() {
                       fontWeight: "bold",
                     },
                   }}
-                  primary={payer.name + "- Total: $" + payer.total.toFixed(2)}
+                  primary={`${payer.name} - Total: $${payer.total.toFixed(2)}`}
                 />
               </ListItem>
             ))}
@@ -414,24 +335,21 @@ export default function AssignItems() {
         </Container>
       </Stack>
 
-      {/* <h2>Payers:</h2>
-      <ul>
-        {payers?.map((payer) => (
-          <li key={payer.id}>
-            {payer.name} - Total: ${payer.total.toFixed(2)}
-          </li>
-        ))}
-      </ul> */}
-
-      {/* <button onClick={handleUpdateAssignment}>Update</button> */}
-      {/* <button onClick={handleSendRequest}>Send Payment Requests</button> */}
       <Box sx={{ mt: 2, display: "flex", justifyContent: "flex-end" }}>
         <Stack direction="row" spacing={2}>
-          <Button variant="outlined" onClick={handleUpdateAssignment}>
+          <Button
+            variant="outlined"
+            onClick={handleUpdateAssignment}
+            disabled={requestSent} // disable if request sent
+          >
             Calculate Totals
           </Button>
 
-          <Button variant="contained" onClick={handleSendRequest}>
+          <Button
+            variant="contained"
+            onClick={handleSendRequest}
+            disabled={requestSent} // disable if request sent
+          >
             Send Payment Requests
           </Button>
         </Stack>
