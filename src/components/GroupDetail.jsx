@@ -87,24 +87,6 @@ function GroupDetailPage() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
-  // ---- Fetch members ---- \\
-  const fetchMembers = async () => {
-    try {
-      setLoadingMembers(true);
-      const res = await axios.get(`${API_URL}/api/group/${id}/members`, {
-        withCredentials: true,
-      });
-
-      // res.data has { members: [...], owner: {...} }
-      setMembers(res.data.members || []);
-      setGroupOwner(res.data.owner || null);
-    } catch (e) {
-      setErr(e?.response?.data?.error || "Failed to load members");
-    } finally {
-      setLoadingMembers(false);
-    }
-  };
-
   // ---- Fetch receipts ---- \\
   const fetchReceipts = async () => {
     try {
@@ -118,17 +100,35 @@ function GroupDetailPage() {
     }
   };
 
-  // ---- Fetch group info ---- \\
-  const fetchGroupInfo = async () => {
+  // ---- Fetch group info/members ---- \\
+  const fetchGroupData = async () => {
     try {
-      const res = await axios.get(`${API_URL}/api/group/myGroups/${id}`);
-      setGroupName(res.data.groupName || "Unnamed Group");
-      setGroupOwner(res.data.owner || null);
+      setLoadingMembers(true);
+
+      const res = await axios.get(`${API_URL}/api/group/${id}/members`, {
+        withCredentials: true,
+      });
+
+      // res.data has { groupName, members: [...], owner: {...} }
+      const { groupName, members, owner } = res.data;
+
+      setGroupName(groupName || "Unnamed Group");
+      setMembers(members || []);
+      setGroupOwner(owner || null);
+      setErr(""); // clear any previous error
     } catch (e) {
-      console.error("Failed to fetch group info", e);
+      setErr(e?.response?.data?.error || "Failed to load group data");
+      setMembers([]);
+      setGroupOwner(null);
+    } finally {
+      setLoadingMembers(false);
     }
   };
 
+  useEffect(() => {
+    fetchGroupData();
+    fetchReceipts(); // still separate because receipts are a different endpoint
+  }, [id]);
   // ---- Remove member ---- \\
   const confirmRemoveMember = async () => {
     if (!memberToRemove) return;
@@ -184,9 +184,8 @@ function GroupDetailPage() {
   const handleTabChange = (_, newValue) => setTabIndex(newValue);
 
   useEffect(() => {
-    fetchMembers();
+    fetchGroupData();
     fetchReceipts();
-    fetchGroupInfo();
   }, [id]);
 
   // ---- Sorting + pagination ---- \\
