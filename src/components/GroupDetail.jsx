@@ -3,7 +3,7 @@ import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
 import { API_URL } from "../shared";
 
-// ---- CSS MUI IMPORTS BELOW HERE ---- \\
+// ---- MUI Imports ---- \\
 import {
   Box,
   Button,
@@ -16,7 +16,6 @@ import {
   Avatar,
   ListItemText,
   Divider,
-  CircularProgress,
   IconButton,
   Table,
   TableBody,
@@ -48,9 +47,7 @@ import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-// ---- CSS MUI IMPORTS ABOVE HERE ---- \\
-
-// ----------------- Helpers -----------------
+// ---- Helpers ---- \\
 function TabPanel({ value, index, children, ...other }) {
   return (
     <div hidden={value !== index} role="tabpanel" {...other}>
@@ -66,40 +63,41 @@ const fmtCurrency = (n) =>
 
 const fmtDate = (iso) => (iso ? new Date(iso).toLocaleDateString() : "—");
 
-// -------------------------------------------
-
+// ---- Component ---- \\
 function GroupDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
 
   const [tabIndex, setTabIndex] = useState(0);
   const [members, setMembers] = useState([]);
-  const [removeOpen, setRemoveOpen] = useState(false);
-  const [memberToRemove, setMemberToRemove] = useState(null);
   const [groupName, setGroupName] = useState("");
+  const [groupOwner, setGroupOwner] = useState(null);
   const [receipts, setReceipts] = useState([]);
-  
-  // Loading and Leaving Notifications
   const [loadingMembers, setLoadingMembers] = useState(true);
   const [loadingReceipts, setLoadingReceipts] = useState(true);
   const [leaving, setLeaving] = useState(false);
   const [leaveOpen, setLeaveOpen] = useState(false);
+  const [removeOpen, setRemoveOpen] = useState(false);
+  const [memberToRemove, setMemberToRemove] = useState(null);
   const [err, setErr] = useState("");
 
-  // Sort/pagination state for receipts
+  // Sorting/pagination state
   const [orderBy, setOrderBy] = useState("createdAt");
   const [order, setOrder] = useState("desc");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
-  // Fetch group members
+  // ---- Fetch members ---- \\
   const fetchMembers = async () => {
     try {
       setLoadingMembers(true);
       const res = await axios.get(`${API_URL}/api/group/${id}/members`, {
         withCredentials: true,
       });
-      setMembers(res.data || []);
+
+      // res.data has { members: [...], owner: {...} }
+      setMembers(res.data.members || []);
+      setGroupOwner(res.data.owner || null);
     } catch (e) {
       setErr(e?.response?.data?.error || "Failed to load members");
     } finally {
@@ -107,7 +105,7 @@ function GroupDetailPage() {
     }
   };
 
-  // Fetch receipts
+  // ---- Fetch receipts ---- \\
   const fetchReceipts = async () => {
     try {
       setLoadingReceipts(true);
@@ -120,47 +118,53 @@ function GroupDetailPage() {
     }
   };
 
-  // Fetch group name
-  const fetchGroupName = async () => {
+  // ---- Fetch group info ---- \\
+  const fetchGroupInfo = async () => {
     try {
       const res = await axios.get(`${API_URL}/api/group/myGroups/${id}`);
       setGroupName(res.data.groupName || "Unnamed Group");
+      setGroupOwner(res.data.owner || null);
     } catch (e) {
-      console.error("Failed to fetch group name", e);
+      console.error("Failed to fetch group info", e);
     }
   };
 
-  // Remove a member function 
+  // ---- Remove member ---- \\
   const confirmRemoveMember = async () => {
-  if (!memberToRemove) return;
+    if (!memberToRemove) return;
 
-  // This removes with toast notifcations. 
-  const userId = memberToRemove.id;
-  const name =
-    memberToRemove.username ||
-    [memberToRemove.firstName, memberToRemove.lastName].filter(Boolean).join(" ") ||
-    memberToRemove.email ||
-    "this member";
+    const userId = memberToRemove.id;
+    const name =
+      memberToRemove.username ||
+      [memberToRemove.firstName, memberToRemove.lastName]
+        .filter(Boolean)
+        .join(" ") ||
+      memberToRemove.email ||
+      "this member";
 
-  try {
-    await axios.delete(`${API_URL}/api/group/${id}/members/${userId}`, {
-      withCredentials: true,
-    });
-    setMembers((prev) => prev.filter((m) => m.id !== userId));
-    toast.success(`${name} was removed from the group`);
-  } catch (e) {
-    toast.error(e?.response?.data?.error || "Failed to remove member");
-  } finally {
-    setRemoveOpen(false);
-    setMemberToRemove(null);
-  }
-};
+    try {
+      await axios.delete(`${API_URL}/api/group/${id}/members/${userId}`, {
+        withCredentials: true,
+      });
+      setMembers((prev) => prev.filter((m) => m.id !== userId));
+      toast.success(`${name} was removed from the group`);
+    } catch (e) {
+      toast.error(e?.response?.data?.error || "Failed to remove member");
+    } finally {
+      setRemoveOpen(false);
+      setMemberToRemove(null);
+    }
+  };
 
-  // Leave group (Make sure to add toast notifications for other ones)
+  // ---- Leave group ---- \\
   const handleLeave = async () => {
     try {
       setLeaving(true);
-      await axios.post(`${API_URL}/api/group/${id}/leave`, {}, { withCredentials: true });
+      await axios.post(
+        `${API_URL}/api/group/${id}/leave`,
+        {},
+        { withCredentials: true }
+      );
       toast.success("You left the group");
       navigate("/group");
     } catch (e) {
@@ -171,21 +175,21 @@ function GroupDetailPage() {
     }
   };
 
-    // Handlers here below
-    const openRemoveDialog = (member) => {
-      setMemberToRemove(member);
-      setRemoveOpen(true);
-    };
+  // ---- Handlers ---- \\
+  const openRemoveDialog = (member) => {
+    setMemberToRemove(member);
+    setRemoveOpen(true);
+  };
+
+  const handleTabChange = (_, newValue) => setTabIndex(newValue);
 
   useEffect(() => {
     fetchMembers();
     fetchReceipts();
-    fetchGroupName();
+    fetchGroupInfo();
   }, [id]);
 
-  const handleTabChange = (_, newValue) => setTabIndex(newValue);
-
-  // Sorting + pagination for receipts. Adjusting later down the road but keeping short for now
+  // ---- Sorting + pagination ---- \\
   const sortedReceipts = useMemo(() => {
     const data = [...receipts];
     data.sort((a, b) => {
@@ -202,10 +206,10 @@ function GroupDetailPage() {
     return sortedReceipts.slice(start, start + rowsPerPage);
   }, [sortedReceipts, page, rowsPerPage]);
 
-  // ====== ALL CSS WITH INTERACTABLE BUTTONS BELOW HERE ===== \\
+  // ---- Render ---- \\
   return (
     <Container maxWidth="lg" sx={{ py: 3 }}>
-      {/* === Breadcrumbs  === */}
+      {/* Breadcrumbs */}
       <Breadcrumbs sx={{ mb: 2 }}>
         <Link
           underline="hover"
@@ -218,7 +222,7 @@ function GroupDetailPage() {
         <Typography color="text.primary">{groupName || "…"}</Typography>
       </Breadcrumbs>
 
-      {/* === Header card === */}
+      {/* Header */}
       <Paper
         elevation={1}
         sx={{
@@ -249,9 +253,11 @@ function GroupDetailPage() {
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 {loadingMembers ? (
-                  <Skeleton width={120} />
+                  <Skeleton width={180} />
                 ) : (
-                  `${members.length} member${members.length === 1 ? "" : "s"}`
+                  <>
+                    {members.length} member{members.length === 1 ? "" : "s"}
+                  </>
                 )}
               </Typography>
             </Box>
@@ -296,17 +302,28 @@ function GroupDetailPage() {
           indicatorColor="primary"
           aria-label="Group Tabs"
         >
-          <Tab icon={<GroupIcon fontSize="small" />} iconPosition="start" label="Members" />
-          <Tab icon={<ReceiptLongIcon fontSize="small" />} iconPosition="start" label="Receipts" />
+          <Tab
+            icon={<GroupIcon fontSize="small" />}
+            iconPosition="start"
+            label="Members"
+          />
+          <Tab
+            icon={<ReceiptLongIcon fontSize="small" />}
+            iconPosition="start"
+            label="Receipts"
+          />
         </Tabs>
       </Paper>
 
-      {/* ===== Members Tab ===== */}
+      {/* Members Tab */}
       <TabPanel value={tabIndex} index={0}>
         {loadingMembers ? (
           <Paper sx={{ p: 2, borderRadius: 3 }}>
             {[...Array(3)].map((_, i) => (
-              <Box key={i} sx={{ display: "flex", alignItems: "center", py: 1.5, gap: 2 }}>
+              <Box
+                key={i}
+                sx={{ display: "flex", alignItems: "center", py: 1.5, gap: 2 }}
+              >
                 <Skeleton variant="circular" width={40} height={40} />
                 <Box sx={{ flex: 1 }}>
                   <Skeleton width="30%" />
@@ -339,39 +356,49 @@ function GroupDetailPage() {
         ) : (
           <Paper sx={{ borderRadius: 3, overflow: "hidden" }}>
             <List disablePadding>
-              {members.map((m, idx) => (
-                <React.Fragment key={m.id}>
-                  <ListItem
-                    secondaryAction={
-                      <Tooltip title="Remove member">
-                        <IconButton edge="end" onClick={() => openRemoveDialog(m)}>
-                          <PersonRemoveIcon />
-                        </IconButton>
-                      </Tooltip>
-                    }
-                    sx={{
-                      "&:hover": { bgcolor: "action.hover" },
-                    }}
-                  >
-                    <ListItemAvatar>
-                      <Avatar src={m.profilePic || undefined}>
-                        {m.username?.[0]?.toUpperCase() || "?"}
-                      </Avatar>
-                    </ListItemAvatar>
-                    <ListItemText
-                      primary={<Typography sx={{ fontWeight: 500 }}>{m.username}</Typography>}
-                      secondary={m.email}
-                    />
-                  </ListItem>
-                  {idx < members.length - 1 && <Divider component="li" />}
-                </React.Fragment>
-              ))}
+              {members.map((m, idx) => {
+                const isOwner = m.id === groupOwner?.id;
+                return (
+                  <React.Fragment key={m.id}>
+                    <ListItem
+                      secondaryAction={
+                        !isOwner && (
+                          <Tooltip title="Remove member">
+                            <IconButton
+                              edge="end"
+                              onClick={() => openRemoveDialog(m)}
+                            >
+                              <PersonRemoveIcon />
+                            </IconButton>
+                          </Tooltip>
+                        )
+                      }
+                      sx={{ "&:hover": { bgcolor: "action.hover" } }}
+                    >
+                      <ListItemAvatar>
+                        <Avatar src={m.profilePic || undefined}>
+                          {m.username?.[0]?.toUpperCase() || "?"}
+                        </Avatar>
+                      </ListItemAvatar>
+                      <ListItemText
+                        primary={
+                          <Typography sx={{ fontWeight: isOwner ? 700 : 500 }}>
+                            {m.username || "Unknown"} {isOwner && "(Owner)"}
+                          </Typography>
+                        }
+                        secondary={m.email || "Unknown"}
+                      />
+                    </ListItem>
+                    {idx < members.length - 1 && <Divider component="li" />}
+                  </React.Fragment>
+                );
+              })}
             </List>
           </Paper>
         )}
       </TabPanel>
 
-      {/* ===== Receipts ===== */}
+      {/* Receipts Tab */}
       <TabPanel value={tabIndex} index={1}>
         {loadingReceipts ? (
           <Paper sx={{ p: 2, borderRadius: 3 }}>
@@ -411,13 +438,21 @@ function GroupDetailPage() {
                       { id: "totalPay", label: "Total", align: "right" },
                       { id: "createdAt", label: "Created", align: "right" },
                     ].map((col) => (
-                      <TableCell key={col.id} align={col.align} sx={{ fontWeight: 700 }}>
+                      <TableCell
+                        key={col.id}
+                        align={col.align}
+                        sx={{ fontWeight: 700 }}
+                      >
                         <TableSortLabel
                           active={orderBy === col.id}
                           direction={orderBy === col.id ? order : "asc"}
                           onClick={() => {
                             setOrderBy(col.id);
-                            setOrder(orderBy === col.id && order === "asc" ? "desc" : "asc");
+                            setOrder(
+                              orderBy === col.id && order === "asc"
+                                ? "desc"
+                                : "asc"
+                            );
                             setPage(0);
                           }}
                         >
@@ -438,8 +473,12 @@ function GroupDetailPage() {
                       <TableCell>{r.title}</TableCell>
                       <TableCell>{r.body?.slice(0, 60) || "—"}</TableCell>
                       <TableCell>{r.category || "—"}</TableCell>
-                      <TableCell align="right">{fmtCurrency(Number(r.totalPay) || 0)}</TableCell>
-                      <TableCell align="right">{fmtDate(r.createdAt)}</TableCell>
+                      <TableCell align="right">
+                        {fmtCurrency(Number(r.totalPay) || 0)}
+                      </TableCell>
+                      <TableCell align="right">
+                        {fmtDate(r.createdAt)}
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -464,7 +503,7 @@ function GroupDetailPage() {
         )}
       </TabPanel>
 
-      {/* === Leave dialog === */}
+      {/* Leave dialog */}
       <Dialog open={leaveOpen} onClose={() => setLeaveOpen(false)}>
         <DialogTitle>Leave this group?</DialogTitle>
         <DialogContent>
@@ -474,13 +513,18 @@ function GroupDetailPage() {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setLeaveOpen(false)}>Cancel</Button>
-          <Button onClick={handleLeave} color="error" variant="contained" disabled={leaving}>
+          <Button
+            onClick={handleLeave}
+            color="error"
+            variant="contained"
+            disabled={leaving}
+          >
             {leaving ? "Leaving…" : "Leave group"}
           </Button>
         </DialogActions>
       </Dialog>
 
-
+      {/* Remove member dialog */}
       <Dialog open={removeOpen} onClose={() => setRemoveOpen(false)}>
         <DialogTitle>Remove member?</DialogTitle>
         <DialogContent>
@@ -488,7 +532,9 @@ function GroupDetailPage() {
             Are you sure you want to remove{" "}
             <strong>
               {memberToRemove?.username ||
-                [memberToRemove?.firstName, memberToRemove?.lastName].filter(Boolean).join(" ") ||
+                [memberToRemove?.firstName, memberToRemove?.lastName]
+                  .filter(Boolean)
+                  .join(" ") ||
                 memberToRemove?.email ||
                 "this member"}
             </strong>{" "}
@@ -497,7 +543,11 @@ function GroupDetailPage() {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setRemoveOpen(false)}>Cancel</Button>
-          <Button color="error" variant="contained" onClick={confirmRemoveMember}>
+          <Button
+            color="error"
+            variant="contained"
+            onClick={confirmRemoveMember}
+          >
             Remove
           </Button>
         </DialogActions>

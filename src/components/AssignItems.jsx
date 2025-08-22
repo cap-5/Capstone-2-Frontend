@@ -3,7 +3,6 @@ import { useParams } from "react-router-dom";
 import axios from "axios";
 import { API_URL } from "../shared";
 import { toast } from "react-toastify";
-
 import Container from "@mui/material/Container";
 import { Box, ListItemButton, ListItemIcon, Stack } from "@mui/material";
 import List from "@mui/material/List";
@@ -13,6 +12,7 @@ import FormControlLabel from "@mui/material/FormControlLabel";
 import Checkbox from "@mui/material/Checkbox";
 import Button from "@mui/material/Button";
 import { ListItemText } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
 const dummyReceipt = [
   { id: 1, name: "Apples", price: 6.0 },
@@ -28,6 +28,7 @@ const dummyGroup = [
 
 export default function AssignItems() {
   const { groupId, receiptId } = useParams();
+   const navigate = useNavigate();
 
   const [items, setItems] = useState([]);
   const [payers, setPayers] = useState([]);
@@ -140,6 +141,7 @@ export default function AssignItems() {
       );
       console.log("Request sent:", res.data);
       toast.success(" Payment requests sent!");
+      navigate(`/groups/${groupId}`);
     } catch (err) {
       console.error(
         "Error sending requests:",
@@ -153,6 +155,7 @@ export default function AssignItems() {
       }
     }
   }
+
   function calculateTotal(assignments) {
     /**
      * Find the length of the payers in updatedAssignments
