@@ -26,7 +26,6 @@ import { auth0Config } from "./auth0-config";
 import DashboardPayments from "./components/DashboardPayments";
 import PaymentComplete from "./components/paymentCompleted";
 import { ToastContainer } from "react-toastify";
-import PaymentStatus from "./components/PaymentStatus";
 
 const socket = io(SOCKETS_URL, {
   withCredentials: NODE_ENV === "production",
@@ -87,7 +86,6 @@ const App = () => {
             <Route path="notifications" element={<Notifications />} />
             <Route path="userReceipts" element={<UserReceipts />} />
             <Route path="payments" element={<DashboardPayments />} />
-            <Route path="PaymentStatus" element={<PaymentStatus />} />
           </Route>
         </Routes>
         <ToastContainer

@@ -1,0 +1,26 @@
+.payment-card {
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeInUp 0.6s forwards;
+}
+
+@keyframes fadeInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.payment-card:hover {
+  transform: scale(1.05);
+  box-shadow: 6px 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.payment-card:hover {
+  transform: scale(1.05) rotateX(1deg) rotateY(1deg);
+  box-shadow: 0 20px 30px rgba(0, 0, 0, 0.3);
+}
+
+.payment-card button:hover {
+  transform: scale(1.05);
+  transition: transform 0.2s ease;
+}
