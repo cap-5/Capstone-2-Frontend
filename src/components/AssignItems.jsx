@@ -103,6 +103,7 @@ export default function AssignItems() {
     toast.dismiss();
     toast.success("Totals Updated!");
   }
+
   async function handleSendRequest() {
     if (requestSent) return;
 
@@ -123,22 +124,28 @@ export default function AssignItems() {
         toast.success("Payment requests sent!");
         setRequestSent(true);
         setTimeout(() => navigate(`/groups/${groupId}`), 200);
-      } else if (
-        res.status === 200 &&
-        res.data.message.includes("already exist")
-      ) {
-        toast.info("Requests already sent for this receipt.");
-        setRequestSent(true);
       }
     } catch (err) {
       toast.dismiss();
-      toast.error("Failed to send payment requests.");
+
+      // Detect backend “already sent” error
+      if (
+        err.response?.status === 400 &&
+        err.response?.data?.error?.includes("already been sent")
+      ) {
+        toast.info("Payment requests have already been sent for this receipt.");
+        setRequestSent(true); // lock the UI
+      } else {
+        toast.error("Failed to send payment requests.");
+      }
+
       console.error(
         "Error sending requests:",
         err.response?.data || err.message
       );
     }
   }
+
   function calculateTotal(assignments) {
     /**
      * Find the length of the payers in updatedAssignments
@@ -255,8 +262,27 @@ export default function AssignItems() {
       }
     }
 
+    async function checkIfRequestSent() {
+      try {
+        const res = await axios.get(
+          `${API_URL}/api/group/${groupId}/receipts/${receiptId}/request-status`,
+          { withCredentials: true }
+        );
+        // Suppose the API returns { sent: true/false }
+        if (res.data.sent) {
+          setRequestSent(true); // disable all interactions
+          toast.info(
+            "Payment requests have already been sent for this receipt."
+          );
+        }
+      } catch (err) {
+        console.error("Error checking request status:", err);
+      }
+    }
+
     fetchMembers();
     fetchItems();
+    checkIfRequestSent();
   }, [groupId, receiptId]);
 
   return (
