@@ -112,8 +112,15 @@ function GroupDetailPage() {
       // res.data has { groupName, members: [...], owner: {...} }
       const { groupName, members, owner } = res.data;
 
+      // Move owner to the top
+      const sortedMembers = [
+       // Separate owner from other members and display owner first
+        ...members.filter((m) => m.id === owner.id),
+        ...members.filter((m) => m.id !== owner.id),
+      ];
+
       setGroupName(groupName || "Unnamed Group");
-      setMembers(members || []);
+      setMembers(sortedMembers || []);
       setGroupOwner(owner || null);
       setErr(""); // clear any previous error
     } catch (e) {
@@ -124,11 +131,11 @@ function GroupDetailPage() {
       setLoadingMembers(false);
     }
   };
-
   useEffect(() => {
     fetchGroupData();
     fetchReceipts(); // still separate because receipts are a different endpoint
   }, [id]);
+
   // ---- Remove member ---- \\
   const confirmRemoveMember = async () => {
     if (!memberToRemove) return;
