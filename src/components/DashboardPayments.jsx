@@ -1,24 +1,30 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import "./DashboardPayments.css";
+
 import {
   Typography,
-  Button,
-  Box,
   CircularProgress,
   Snackbar,
   Alert,
-  Container,
   Card,
   CardContent,
   CardActions,
-  Stack,
+  Button,
+  Box,
+  Container,
+  Chip,
 } from "@mui/material";
 import { API_URL } from "../shared";
 
 const DashboardPayments = () => {
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [snack, setSnack] = useState({ open: false, message: "", severity: "info" });
+  const [snack, setSnack] = useState({
+    open: false,
+    message: "",
+    severity: "info",
+  });
   const [actionLoadingId, setActionLoadingId] = useState(null);
 
   // Fetch payments
@@ -54,7 +60,6 @@ const DashboardPayments = () => {
       );
 
       console.log(res.data);
-
       setPayments((prev) =>
         prev.map((p) =>
           p.id === paymentId ? { ...p, status: "awaiting_payment" } : p
@@ -78,49 +83,77 @@ const DashboardPayments = () => {
   };
 
   return (
-    <Container maxWidth="sm" sx={{ mt: 4 }}>
-      <Typography variant="h5" gutterBottom fontWeight="bold">
+    <Container sx={{ py: 3 }}>
+      <Typography
+        variant="h4"
+        gutterBottom
+        fontWeight="bold"
+        textAlign="center"
+      >
         Pending Payments
       </Typography>
 
-      {loading && payments.length === 0 ? (
+      {loading ? (
         <Box display="flex" justifyContent="center" mt={4}>
           <CircularProgress />
         </Box>
       ) : payments.length === 0 ? (
-        <Typography color="text.secondary">No pending payments</Typography>
+        <Typography color="text.secondary" textAlign="center">
+          No pending payments
+        </Typography>
       ) : (
-        <Stack spacing={2}>
+        <Box
+          sx={{
+            display: "flex",
+            flexWrap: "wrap",
+            gap: 2,
+            justifyContent: "center",
+            py: 2,
+          }}
+        >
           {payments.map((payment) => (
             <Card
               key={payment.id}
+              className="payment-card"
               sx={{
-                borderRadius: 2,
-                boxShadow: 1,
-                transition: "all 0.2s ease",
-                "&:hover": { boxShadow: 3, transform: "translateY(-2px)" },
+                flex: "0 0 auto",
+                minWidth: { xs: 200, sm: 220, md: 250 },
+                maxWidth: { xs: 240, sm: 260, md: 280 },
               }}
             >
-              <CardContent sx={{ pb: 1 }}>
-                <Typography variant="h6" fontWeight="bold">
+              <CardContent>
+                <Typography variant="h5" fontWeight="bold" gutterBottom>
                   ${payment.amount}
                 </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {payment.groupInfo?.groupName || "Group"}
+                <Typography variant="body1">
+                  <strong>Group:</strong>{" "}
+                  {payment.groupInfo?.groupName || "Unknown"}
                 </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  {payment.status === "awaiting_payment"
-                    ? "Waiting for PayPal payment to be completed"
-                    : `Requested by: ${payment.requester?.username || "Unknown"}`}
+                <Typography variant="body1">
+                  <strong>Requester:</strong>{" "}
+                  {payment.requester?.username || "Unknown"}
                 </Typography>
+                <Chip
+                  label={
+                    payment.status === "awaiting_payment"
+                      ? "AWAITING PAYMENT"
+                      : "PENDING"
+                  }
+                  size="medium"
+                  sx={{ mt: 1, fontWeight: "bold" }}
+                />
               </CardContent>
-              <CardActions sx={{ justifyContent: "flex-end", pt: 0 }}>
+              <CardActions sx={{ justifyContent: "flex-end" }}>
                 <Button
                   variant={
-                    payment.status === "awaiting_payment" ? "outlined" : "contained"
+                    payment.status === "awaiting_payment"
+                      ? "outlined"
+                      : "contained"
                   }
                   color={
-                    payment.status === "awaiting_payment" ? "secondary" : "primary"
+                    payment.status === "awaiting_payment"
+                      ? "secondary"
+                      : "primary"
                   }
                   size="small"
                   onClick={() => handleAcceptPayment(payment.id)}
@@ -140,7 +173,7 @@ const DashboardPayments = () => {
               </CardActions>
             </Card>
           ))}
-        </Stack>
+        </Box>
       )}
 
       <Snackbar

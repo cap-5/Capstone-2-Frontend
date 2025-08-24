@@ -13,7 +13,6 @@ import NotificationsIcon from "@mui/icons-material/Notifications";
 import ReceiptIcon from "@mui/icons-material/Receipt";
 import PaymentIcon from "@mui/icons-material/Payment";
 
-
 import { keyframes } from "@emotion/react";
 
 const drawerWidth = 240;
@@ -74,7 +73,10 @@ const Dashboard = () => {
               button
               component={Link}
               to="profile"
-              sx={{ color: "white", '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' } }}
+              sx={{
+                color: "white",
+                "&:hover": { backgroundColor: "rgba(255, 255, 255, 0.1)" },
+              }}
             >
               <PersonIcon sx={{ mr: 1 }} />
               <ListItemText primary="Profile" />
@@ -84,7 +86,10 @@ const Dashboard = () => {
               button
               component={Link}
               to="notifications"
-              sx={{ color: "white", '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' } }}
+              sx={{
+                color: "white",
+                "&:hover": { backgroundColor: "rgba(255, 255, 255, 0.1)" },
+              }}
             >
               <NotificationsIcon sx={{ mr: 1 }} />
               <ListItemText primary="Group Invites" />
@@ -94,7 +99,10 @@ const Dashboard = () => {
               button
               component={Link}
               to="userReceipts"
-              sx={{ color: "white", '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' } }}
+              sx={{
+                color: "white",
+                "&:hover": { backgroundColor: "rgba(255, 255, 255, 0.1)" },
+              }}
             >
               <ReceiptIcon sx={{ mr: 1 }} />
               <ListItemText primary="My Upload Receipts" />
@@ -104,21 +112,15 @@ const Dashboard = () => {
               button
               component={Link}
               to="payments"
-              sx={{ color: "white", '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' } }}
+              sx={{
+                color: "white",
+                "&:hover": { backgroundColor: "rgba(255, 255, 255, 0.1)" },
+              }}
             >
               <PaymentIcon sx={{ mr: 1 }} />
               <ListItemText primary="My Payments" />
             </ListItem>
-
-             <ListItem
-              button
-              component={Link}
-              to="PaymentStatus"
-              sx={{ color: "white", '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' } }}
-            >
-              <PaymentIcon sx={{ mr: 1 }} />
-              <ListItemText primary="Payment status" />
-            </ListItem>
+            
           </List>
         </Box>
       </Drawer>
