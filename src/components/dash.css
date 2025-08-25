@@ -1,0 +1,61 @@
+/* Full-screen red & black snowy moving background */
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  overflow: hidden; /* prevent scrollbars */
+  background: linear-gradient(#2b0000, #000000); /* deep red to black */
+}
+
+/* two snow layers */
+body::before,
+body::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  will-change: background-position, transform;
+}
+
+/* distant small glowing flakes */
+body::before {
+  background-image:
+    radial-gradient(2px 2px at 20% 10%, rgba(255,0,0,0.8) 50%, transparent 51%),
+    radial-gradient(2px 2px at 80% 20%, rgba(255,50,50,0.75) 50%, transparent 51%),
+    radial-gradient(2px 2px at 40% 30%, rgba(255,0,0,0.85) 50%, transparent 51%),
+    radial-gradient(2px 2px at 60% 40%, rgba(255,50,50,0.8) 50%, transparent 51%);
+  background-size: 400px 400px, 500px 500px, 600px 600px, 700px 700px;
+  background-repeat: repeat;
+  animation: snowFar 30s linear infinite;
+  opacity: 0.6;
+}
+
+/* closer brighter flakes */
+body::after {
+  background-image:
+    radial-gradient(3px 3px at 15% 0%, rgba(255,80,80,0.95) 50%, transparent 51%),
+    radial-gradient(3px 3px at 55% 10%, rgba(255,30,30,0.9) 50%, transparent 51%),
+    radial-gradient(3px 3px at 85% 20%, rgba(255,100,100,0.95) 50%, transparent 51%);
+  background-size: 250px 250px, 300px 300px, 350px 350px;
+  background-repeat: repeat;
+  animation: snowNear 15s linear infinite;
+  opacity: 0.9;
+  filter: drop-shadow(0 0 5px rgba(255,0,0,0.8)); /* red glow */
+}
+
+/* animations */
+@keyframes snowFar {
+  0%   { background-position: 0 -1000px; transform: translateX(0); }
+  50%  { background-position: 0 0;       transform: translateX(10px); }
+  100% { background-position: 0 1000px;  transform: translateX(0); }
+}
+
+@keyframes snowNear {
+  0%   { background-position: 0 -800px;  transform: translateX(0); }
+  50%  { background-position: 0 0;       transform: translateX(-15px); }
+  100% { background-position: 0 800px;   transform: translateX(0); }
+}
